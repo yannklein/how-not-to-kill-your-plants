@@ -23,6 +23,8 @@ RUN npx esbuild src/db/migrate.ts --bundle --platform=node --format=cjs --target
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+# curl is needed by the Coolify Scheduled Task (cron tick) run inside this container.
+RUN apk add --no-cache curl
 RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
 # Standalone output does not include public/ or .next/static: copy both.
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
