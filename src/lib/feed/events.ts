@@ -14,7 +14,7 @@ async function homeSettings() {
   return { timezone: row?.timezone ?? "Europe/Madrid", hemisphere: row?.hemisphere ?? ("N" as const) };
 }
 
-async function userName(userId: string): Promise<string> {
+export async function userName(userId: string): Promise<string> {
   const [row] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId));
   return row?.name ?? "";
 }
