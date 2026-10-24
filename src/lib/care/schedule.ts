@@ -43,6 +43,8 @@ export function initialTasks(input: {
   if (profile.mistEveryDays != null) {
     tasks.push({ type: "mist", dueOn: addDays(today, profile.mistEveryDays) });
   }
+  // The photos taken when adding the plant are its first portrait.
+  tasks.push({ type: "photo", dueOn: addMonths(today, 1) });
   return tasks;
 }
 
@@ -105,6 +107,7 @@ export function nextDue(input: {
         dueOn: profile.mistEveryDays == null ? null : addDays(today, profile.mistEveryDays),
       };
     case "photo":
-      throw new Error("photo tasks are not scheduled by the care engine");
+      // Monthly portrait: done or skipped, it asks again a month later.
+      return { dueOn: addMonths(today, 1) };
   }
 }

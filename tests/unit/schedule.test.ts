@@ -69,3 +69,23 @@ describe("nextDue", () => {
     expect(nextDue({ ...base, type: "water", outcome: "done", today: "2026-10-24" }).dueOn).toBe("2026-11-05");
   });
 });
+
+describe("monthly portrait task", () => {
+  it("is part of the initial tasks, due a month later", () => {
+    const tasks = initialTasks({
+      today: "2026-10-25",
+      acquiredOn: "2026-10-25",
+      justBought: true,
+      profile: pilea,
+      hemisphere: "N",
+    });
+    expect(tasks.find((t) => t.type === "photo")?.dueOn).toBe("2026-11-25");
+  });
+
+  it("comes back a month after it is done or skipped", () => {
+    for (const outcome of ["done", "skipped"] as const) {
+      const next = nextDue({ type: "photo", outcome, today: "2026-11-25", profile: pilea, hemisphere: "N" });
+      expect(next.dueOn).toBe("2026-12-25");
+    }
+  });
+});
