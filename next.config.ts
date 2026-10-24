@@ -14,7 +14,7 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
   cacheComponents: false,
   experimental: {
     serverActions: { bodySizeLimit: "5mb" },

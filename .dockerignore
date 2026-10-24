@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.superpowers
+.env*
+!.env.example
+test-results
+playwright-report
+*.tsbuildinfo
+public/sw.js
+public/sw.js.map
+public/swe-worker-*.js

@@ -8,6 +8,7 @@ const schema = z
     ANTHROPIC_API_KEY: z.string().min(1).optional(),
     AI_MODE: z.enum(["live", "mock"]).default("live"),
     S3_ENDPOINT: z.string().min(1),
+    S3_PUBLIC_ENDPOINT: z.string().min(1).optional(),
     S3_BUCKET: z.string().min(1),
     S3_ACCESS_KEY: z.string().min(1),
     S3_SECRET_KEY: z.string().min(1),

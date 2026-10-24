@@ -11,8 +11,9 @@ export async function runMigrations(url: string): Promise<void> {
   }
 }
 
-// CLI entry: `npm run db:migrate`
-if (process.argv[1]?.endsWith("migrate.ts")) {
+// CLI entry: `npm run db:migrate`, or `node dist/migrate.js` in the container
+// (esbuild bundle; runs from the app root so ./drizzle resolves).
+if (/migrate\.(ts|js)$/.test(process.argv[1] ?? "")) {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
   runMigrations(url).then(

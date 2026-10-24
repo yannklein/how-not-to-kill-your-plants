@@ -7,11 +7,13 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/lib/env";
 
-let client: S3Client | undefined;
+const clients = new Map<string, S3Client>();
 
-function s3(): S3Client {
-  client ??= new S3Client({
-    endpoint: env.S3_ENDPOINT,
+function s3(endpoint: string = env.S3_ENDPOINT): S3Client {
+  let client = clients.get(endpoint);
+  if (client) return client;
+  client = new S3Client({
+    endpoint,
     region: "us-east-1",
     forcePathStyle: true,
     credentials: {
@@ -19,6 +21,7 @@ function s3(): S3Client {
       secretAccessKey: env.S3_SECRET_KEY,
     },
   });
+  clients.set(endpoint, client);
   return client;
 }
 
@@ -45,9 +48,11 @@ export async function getObjectBytes(key: string): Promise<Buffer> {
   return Buffer.from(await res.Body.transformToByteArray());
 }
 
+// Signed URLs are opened by the phones' browsers, so they are presigned against
+// S3_PUBLIC_ENDPOINT when set (the server itself talks to S3_ENDPOINT).
 export async function signedUrl(key: string, ttlSeconds = 3600): Promise<string> {
   return getSignedUrl(
-    s3(),
+    s3(env.S3_PUBLIC_ENDPOINT ?? env.S3_ENDPOINT),
     new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
     { expiresIn: ttlSeconds },
   );

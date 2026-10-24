@@ -32,6 +32,7 @@ export default defineConfig({
             S3_ACCESS_KEY: "minio",
             S3_SECRET_KEY: "minio-secret",
             AI_MODE: "mock",
+            // dev only: never reuse in production
             VAPID_PUBLIC_KEY: "BHaR0MpyuOp_kRK24mT_Xcqwn40gvbrD7XPV1iNzoqrGz1xzfDXv08UvpFIG4j6D0T9u8RvS-Ux4puUTbkePQxc",
             VAPID_PRIVATE_KEY: "BYo3G-ulOd0TWrQ4JXQjLpicGkx-90IjDCk1HREoErE",
             VAPID_SUBJECT: "mailto:test@example.com",
