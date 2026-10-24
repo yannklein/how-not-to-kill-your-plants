@@ -286,6 +286,9 @@
     }
   },
   "gardener": {
-    "title": "Jardineiro"
+    "title": "Jardineiro",
+    "fallback": "Desculpe, não consegui responder agora. Tente de novo daqui a pouco.",
+    "confirmWater": "Feito ✓ Vou lembrar de regar a cada {days} dias, a partir da próxima rega.",
+    "confirmSpot": "Feito ✓ Agora ela fica em: {spot}."
   }
 }

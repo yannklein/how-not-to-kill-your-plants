@@ -12,7 +12,8 @@ import { addDays, todayIn } from "@/lib/time";
 import { createAlert } from "./alerts";
 import { plantContext, type PlantContext } from "./context";
 import { flagPatterns, type PatternFlag } from "./patterns";
-import { ALERT_CATEGORIES, type Suggestion } from "./types";
+import { usableSuggestion } from "./suggestions";
+import { ALERT_CATEGORIES } from "./types";
 
 const MODEL = "claude-sonnet-5-5" as const;
 // Sonnet 5.5 thinks adaptively by default and thinking shares max_tokens with the answer.
@@ -101,14 +102,6 @@ const allSpots = () =>
     .select({ id: spot.id, name: spot.name, lightLevel: spot.lightLevel, windowDirection: spot.windowDirection })
     .from(spot)
     .orderBy(asc(spot.name));
-
-/** Keeps only suggestions the app can apply: an interval of 1-60 days, or an existing spot (named). */
-function usableSuggestion(s: Finding["suggestion"], spots: { id: string; name: string }[]): Suggestion | null {
-  if (!s) return null;
-  if (s.kind === "water") return Number.isInteger(s.days) && s.days >= 1 && s.days <= 60 ? s : null;
-  const target = spots.find((x) => x.id === s.spotId);
-  return target ? { kind: "spot", spotId: target.id, spotName: target.name } : null;
-}
 
 /** One model call through the budget; null when skipped, refused or unusable. */
 async function runCheck(input: CheckInput, deps: CheckDeps): Promise<Finding | null> {

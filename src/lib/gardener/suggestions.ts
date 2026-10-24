@@ -31,3 +31,14 @@ export async function applySuggestion(
   await db.update(plant).set({ spotId: s.spotId }).where(eq(plant.id, plantId));
   return "applied";
 }
+
+/** A model-proposed change the app can apply: 1-60 watering days, or an existing spot (named). */
+export function usableSuggestion(
+  s: { kind: "water"; days: number } | { kind: "spot"; spotId: string } | null,
+  spots: { id: string; name: string }[],
+): Suggestion | null {
+  if (!s) return null;
+  if (s.kind === "water") return Number.isInteger(s.days) && s.days >= 1 && s.days <= 60 ? s : null;
+  const target = spots.find((x) => x.id === s.spotId);
+  return target ? { kind: "spot", spotId: target.id, spotName: target.name } : null;
+}

@@ -20,4 +20,6 @@ export type ChatContent = {
   photoKey?: string;
   suggestion?: Suggestion;
   applied?: { at: string } | { failed: "gone" | "same" };
+  /** Set when this message brings a health warning into the conversation. */
+  alertId?: string;
 };

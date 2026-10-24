@@ -286,6 +286,9 @@
     }
   },
   "gardener": {
-    "title": "Gardener"
+    "title": "Gardener",
+    "fallback": "Sorry, I couldn't answer that right now. Try again in a moment.",
+    "confirmWater": "Done ✓ I'll remind you to water every {days} days, starting from the next watering.",
+    "confirmSpot": "Done ✓ It now lives in {spot}."
   }
 }
