@@ -42,15 +42,48 @@
   },
   "home": {
     "title": "Hoje",
-    "empty": "Nada a fazer hoje. Suas plantas estão felizes.",
+    "empty": "Todas as suas plantas estão felizes 🌿",
     "overdue": "Atrasadas",
-    "dueToday": "Para hoje"
+    "dueToday": "Para hoje",
+    "needsAttention": "Precisa de atenção",
+    "addPlant": "Adicionar planta",
+    "myPlants": "Minhas plantas",
+    "aiBanner": "Gasto com IA em {pct}% de US$ {cap} neste mês"
   },
   "plants": {
     "title": "Plantas",
     "empty": "Ainda não há plantas. Adicione a primeira!",
     "location": "Local",
-    "acquired": "Adquirida em {date}"
+    "acquired": "Adquirida em {date}",
+    "edit": "Editar",
+    "editTitle": "Editar planta",
+    "profilePending": "Ficha em preparação…",
+    "light": "Luz",
+    "watering": "Rega",
+    "wateringRange": "A cada {min} a {max} dias",
+    "wateringOverride": "A cada {days} dias (sua configuração)",
+    "soil": "Substrato",
+    "fertilizers": "Adubos orgânicos",
+    "toxicity": "Toxicidade",
+    "upcoming": "Próximas tarefas",
+    "noUpcoming": "Nada agendado.",
+    "lightLevels": {
+      "low": "Pouca luz",
+      "medium": "Luz média",
+      "bright_indirect": "Luz clara e indireta",
+      "direct": "Sol direto"
+    },
+    "status": {
+      "label": "Situação",
+      "alive": "Viva",
+      "dead": "Morta",
+      "given_away": "Doada"
+    },
+    "waterOverrideLabel": "Regar a cada … dias (manual)",
+    "waterOverridePlaceholder": "Automático",
+    "save": "Salvar",
+    "saving": "Salvando…",
+    "saveError": "Não foi possível salvar. Verifique os valores."
   },
   "addPlant": {
     "title": "Adicionar planta",
@@ -89,7 +122,15 @@
     "done": "Feito",
     "completedBy": "Feito por {name}",
     "dueOn": "Para {date}",
-    "overdueBy": "{count, plural, one {# dia de atraso} other {# dias de atraso}}"
+    "overdueBy": "{count, plural, one {# dia de atraso} other {# dias de atraso}}",
+    "alreadyDoneBy": "Já feito por {name}",
+    "alreadyDone": "Já feito",
+    "rootbound": {
+      "label": "Raízes apertadas?",
+      "yes": "Sim",
+      "no": "Não",
+      "hint": "Raízes saindo pelos furos de drenagem?"
+    }
   },
   "settings": {
     "title": "Ajustes",

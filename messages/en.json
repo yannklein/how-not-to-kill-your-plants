@@ -42,15 +42,48 @@
   },
   "home": {
     "title": "Today",
-    "empty": "Nothing to do today. Your plants are happy.",
+    "empty": "All your plants are happy 🌿",
     "overdue": "Overdue",
-    "dueToday": "Due today"
+    "dueToday": "Due today",
+    "needsAttention": "Needs attention",
+    "addPlant": "Add plant",
+    "myPlants": "My plants",
+    "aiBanner": "AI spend at {pct}% of ${cap} this month"
   },
   "plants": {
     "title": "Plants",
     "empty": "No plants yet. Add your first one!",
     "location": "Location",
-    "acquired": "Acquired {date}"
+    "acquired": "Acquired {date}",
+    "edit": "Edit",
+    "editTitle": "Edit plant",
+    "profilePending": "Profile being prepared…",
+    "light": "Light",
+    "watering": "Watering",
+    "wateringRange": "Every {min} to {max} days",
+    "wateringOverride": "Every {days} days (your setting)",
+    "soil": "Soil mix",
+    "fertilizers": "Organic fertilizers",
+    "toxicity": "Toxicity",
+    "upcoming": "Coming up",
+    "noUpcoming": "Nothing scheduled.",
+    "lightLevels": {
+      "low": "Low light",
+      "medium": "Medium light",
+      "bright_indirect": "Bright, indirect light",
+      "direct": "Direct sun"
+    },
+    "status": {
+      "label": "Status",
+      "alive": "Alive",
+      "dead": "Dead",
+      "given_away": "Given away"
+    },
+    "waterOverrideLabel": "Water every … days (override)",
+    "waterOverridePlaceholder": "Automatic",
+    "save": "Save",
+    "saving": "Saving…",
+    "saveError": "Could not save. Check the values."
   },
   "addPlant": {
     "title": "Add a plant",
@@ -89,7 +122,15 @@
     "done": "Done",
     "completedBy": "Done by {name}",
     "dueOn": "Due {date}",
-    "overdueBy": "{count, plural, one {# day overdue} other {# days overdue}}"
+    "overdueBy": "{count, plural, one {# day overdue} other {# days overdue}}",
+    "alreadyDoneBy": "Already done by {name}",
+    "alreadyDone": "Already done",
+    "rootbound": {
+      "label": "Root-bound?",
+      "yes": "Yes",
+      "no": "No",
+      "hint": "Roots coming out of the drainage holes?"
+    }
   },
   "settings": {
     "title": "Settings",

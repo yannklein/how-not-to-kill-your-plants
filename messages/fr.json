@@ -42,15 +42,48 @@
   },
   "home": {
     "title": "Aujourd'hui",
-    "empty": "Rien à faire aujourd'hui. Vos plantes sont heureuses.",
+    "empty": "Toutes vos plantes sont heureuses 🌿",
     "overdue": "En retard",
-    "dueToday": "À faire aujourd'hui"
+    "dueToday": "À faire aujourd'hui",
+    "needsAttention": "À faire",
+    "addPlant": "Ajouter une plante",
+    "myPlants": "Mes plantes",
+    "aiBanner": "Dépenses IA à {pct} % de {cap} $ ce mois-ci"
   },
   "plants": {
     "title": "Plantes",
     "empty": "Pas encore de plantes. Ajoutez la première !",
     "location": "Emplacement",
-    "acquired": "Acquise le {date}"
+    "acquired": "Acquise le {date}",
+    "edit": "Modifier",
+    "editTitle": "Modifier la plante",
+    "profilePending": "Fiche en préparation…",
+    "light": "Lumière",
+    "watering": "Arrosage",
+    "wateringRange": "Tous les {min} à {max} jours",
+    "wateringOverride": "Tous les {days} jours (votre réglage)",
+    "soil": "Terreau",
+    "fertilizers": "Engrais organiques",
+    "toxicity": "Toxicité",
+    "upcoming": "À venir",
+    "noUpcoming": "Rien de prévu.",
+    "lightLevels": {
+      "low": "Faible luminosité",
+      "medium": "Luminosité moyenne",
+      "bright_indirect": "Lumière vive et indirecte",
+      "direct": "Soleil direct"
+    },
+    "status": {
+      "label": "État",
+      "alive": "Vivante",
+      "dead": "Morte",
+      "given_away": "Donnée"
+    },
+    "waterOverrideLabel": "Arroser tous les … jours (réglage manuel)",
+    "waterOverridePlaceholder": "Automatique",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saveError": "Enregistrement impossible. Vérifiez les valeurs."
   },
   "addPlant": {
     "title": "Ajouter une plante",
@@ -89,7 +122,15 @@
     "done": "Terminé",
     "completedBy": "Fait par {name}",
     "dueOn": "Prévu le {date}",
-    "overdueBy": "{count, plural, one {# jour de retard} other {# jours de retard}}"
+    "overdueBy": "{count, plural, one {# jour de retard} other {# jours de retard}}",
+    "alreadyDoneBy": "Déjà fait par {name}",
+    "alreadyDone": "Déjà fait",
+    "rootbound": {
+      "label": "Racines à l’étroit ?",
+      "yes": "Oui",
+      "no": "Non",
+      "hint": "Des racines sortent par les trous de drainage ?"
+    }
   },
   "settings": {
     "title": "Réglages",
