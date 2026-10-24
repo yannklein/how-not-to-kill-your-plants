@@ -26,6 +26,7 @@ describe("createPlantWithTasks (AI_MODE=mock)", () => {
     spotId: null,
     justBought: true,
     potSizeCm: 12,
+    labelPhotoKey: null,
     ...over,
   });
 
@@ -99,5 +100,21 @@ describe("createPlantWithTasks (AI_MODE=mock)", () => {
     await expect(createPlantWithTasks(Y, input({ name: "  " }))).rejects.toThrow();
     await expect(createPlantWithTasks(Y, input({ photoKeys: [] }))).rejects.toThrow();
     expect(await db.select().from(plant)).toHaveLength(0);
+  });
+
+  it("stores the label photo as kind label and never makes it the cover", async () => {
+    const labelKey = (
+      await storeDraftPhoto(Y, { bytes: fixture, type: "image/jpeg", width: 1, height: 1 })
+    ).key;
+    const { plantId } = await createPlantWithTasks(
+      Y,
+      input({ photoKeys: [labelKey, draftKey], labelPhotoKey: labelKey }),
+    );
+    const photos = await db.select().from(photo).where(eq(photo.plantId, plantId));
+    expect(photos.map((p) => [p.objectKey, p.kind]).sort()).toEqual(
+      [[draftKey, "plant"], [labelKey, "label"]].sort(),
+    );
+    const [p] = await db.select().from(plant).where(eq(plant.id, plantId));
+    expect(p.coverPhotoId).toBe(photos.find((x) => x.kind === "plant")!.id);
   });
 });

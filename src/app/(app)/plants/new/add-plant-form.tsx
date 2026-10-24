@@ -15,7 +15,7 @@ import { uploadDraftPhoto } from "../upload-action";
 import { createPlantAction, identifyAction } from "./actions";
 
 type Option = { id: string; name: string };
-type DraftPhoto = { key: string; previewUrl: string };
+type DraftPhoto = { key: string; previewUrl: string; slot: "photo" | "label" };
 type Phase = "photo" | "working" | "confirm";
 type Selected = number | "other";
 
@@ -81,7 +81,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
         setPhase(photosRef.current.length ? "confirm" : "photo");
         return;
       }
-      const draft = { key: uploaded.key, previewUrl: URL.createObjectURL(blob) };
+      const draft = { key: uploaded.key, previewUrl: URL.createObjectURL(blob), slot };
       const next = [...photosRef.current];
       const index = slot === "photo" || next.length === 0 ? 0 : 1;
       if (next[index]) URL.revokeObjectURL(next[index].previewUrl);
@@ -132,6 +132,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
       const pot = Number.parseInt(potSize, 10);
       const { plantId } = await createPlantAction({
         photoKeys: photos.map((p) => p.key),
+        labelPhotoKey: photos.find((p) => p.slot === "label")?.key ?? null,
         scientificName: species.scientificName,
         commonName: species.commonName,
         name: name.trim() || species.scientificName,

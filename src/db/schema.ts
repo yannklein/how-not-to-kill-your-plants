@@ -36,6 +36,7 @@ export const taskOutcome = pgEnum("task_outcome", [
   "rootbound_no",
 ]);
 export const plantStatus = pgEnum("plant_status", ["alive", "dead", "given_away"]);
+export const photoKind = pgEnum("photo_kind", ["plant", "label"]);
 export const lightLevel = pgEnum("light_level", [
   "low",
   "medium",
@@ -157,6 +158,7 @@ export const home = pgTable("home", {
     .notNull()
     .default("20"),
   aiWarnedForMonth: text("ai_warned_for_month"), // YYYY-MM
+  lastSeason: text("last_season"), // season last announced in the feed; null = no baseline yet
   createdAt: createdAt(),
 });
 
@@ -241,6 +243,7 @@ export const plant = pgTable(
     status: plantStatus("status").notNull().default("alive"),
     waterIntervalOverrideDays: integer("water_interval_override_days"),
     coverPhotoId: uuid("cover_photo_id"), // no FK: photo -> plant is circular
+    lastMood: text("last_mood"), // mood the feed last saw; null = no baseline yet
     createdAt: createdAt(),
   },
   (t) => [index("plant_group_id_idx").on(t.groupId)],
@@ -298,6 +301,7 @@ export const photo = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     objectKey: text("object_key").notNull(),
+    kind: photoKind("kind").notNull().default("plant"),
     width: integer("width").notNull(),
     height: integer("height").notNull(),
     takenAt: timestamp("taken_at").notNull().defaultNow(),
@@ -332,6 +336,7 @@ export const feedEvent = pgTable(
       .references(() => plant.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    textAttempts: integer("text_attempts").notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [index("feed_event_plant_id_idx").on(t.plantId)],

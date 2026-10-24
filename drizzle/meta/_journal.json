@@ -8,6 +8,13 @@
       "when": 1792861399671,
       "tag": "0000_square_karen_page",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792880481246,
+      "tag": "0001_cultured_patriot",
+      "breakpoints": true
     }
   ]
 }

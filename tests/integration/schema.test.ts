@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db, resetDb } from "./setup";
-import { careTask, group, home, plant, species } from "@/db/schema";
+import { careTask, feedEvent, group, home, photo, plant, species, user } from "@/db/schema";
 
 beforeEach(resetDb);
 
@@ -32,5 +32,17 @@ describe("schema", () => {
     ).rejects.toMatchObject({ cause: { code: "23505" } });
     // a different type for the same plant is fine
     await db.insert(careTask).values({ plantId: p.id, type: "rotate", dueOn: "2026-11-02" });
+  });
+
+  it("defaults photo.kind to plant and feed_event.textAttempts to 0", async () => {
+    const p = await seedPlant();
+    await db.insert(user).values({ id: "u1", name: "Yann", email: "y@example.com" });
+    const [ph] = await db
+      .insert(photo)
+      .values({ plantId: p.id, userId: "u1", objectKey: "photos/x.jpg", width: 1, height: 1 })
+      .returning();
+    expect(ph.kind).toBe("plant");
+    const [ev] = await db.insert(feedEvent).values({ plantId: p.id, type: "first" }).returning();
+    expect(ev.textAttempts).toBe(0);
   });
 });

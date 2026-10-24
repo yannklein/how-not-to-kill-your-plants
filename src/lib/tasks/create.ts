@@ -25,6 +25,8 @@ export type CreatePlantInput = {
   spotId: string | null;
   justBought: boolean;
   potSizeCm: number | null;
+  /** One of photoKeys taken of the shop label: kept for identification, never the cover. */
+  labelPhotoKey: string | null;
 };
 
 export class CreatePlantInputError extends Error {
@@ -111,13 +113,14 @@ export async function createPlantWithTasks(
           plantId: created.id,
           userId,
           objectKey,
+          kind: objectKey === input.labelPhotoKey ? ("label" as const) : ("plant" as const),
           width: sizes[i].width,
           height: sizes[i].height,
         })),
       )
-      .returning({ id: photo.id, objectKey: photo.objectKey });
-    const cover = photos.find((p) => p.objectKey === photoKeys[0]) ?? photos[0];
-    await tx.update(plant).set({ coverPhotoId: cover.id }).where(eq(plant.id, created.id));
+      .returning({ id: photo.id, objectKey: photo.objectKey, kind: photo.kind });
+    const cover = photos.find((p) => p.kind === "plant");
+    if (cover) await tx.update(plant).set({ coverPhotoId: cover.id }).where(eq(plant.id, created.id));
     await tx.insert(careTask).values(
       tasks.map((t) => ({
         plantId: created.id,
