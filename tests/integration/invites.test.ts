@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { invite, user } from "@/db/schema";
+import { group, groupMember, invite, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { acceptInvite, createInvite, InviteError, resetPassword } from "@/lib/invites";
+import { acceptInvite, createInvite, InviteError, InviteInputError, resetPassword } from "@/lib/invites";
 import { db, resetDb } from "./setup";
 
 async function makeAdmin() {
@@ -42,7 +42,13 @@ describe("invites", () => {
 
   it("accepts a valid token: creates a role=user user and marks the invite used", async () => {
     const { token } = await createInvite(adminId);
+    const [everyone] = await db.insert(group).values({ name: "Everyone" }).returning();
     const { userId } = await acceptInvite(token, person);
+    const members = await db
+      .select()
+      .from(groupMember)
+      .where(eq(groupMember.groupId, everyone.id));
+    expect(members.map((m) => m.userId)).toContain(userId);
     const [u] = await db.select().from(user).where(eq(user.id, userId));
     expect(u.role).toBe("user");
     expect(u.email).toBe(person.email);
@@ -93,6 +99,19 @@ describe("invites", () => {
       acceptInvite(token, { ...person, email: "yann@example.com" }),
     ).rejects.toThrow();
     await expect(acceptInvite(token, person)).resolves.toBeDefined();
+  });
+
+  it.each([
+    ["empty password", { ...person, password: "" }],
+    ["too short password", { ...person, password: "short" }],
+    ["blank name", { ...person, name: "   " }],
+  ])("rejects %s and leaves the invite unused", async (_label, input) => {
+    const { token } = await createInvite(adminId);
+    await expect(acceptInvite(token, input)).rejects.toBeInstanceOf(InviteInputError);
+    const [inv] = await db.select().from(invite).where(eq(invite.token, token));
+    expect(inv.usedAt).toBeNull();
+    const users = await db.select().from(user);
+    expect(users).toHaveLength(1);
   });
 
   it("rejects public sign-up", async () => {

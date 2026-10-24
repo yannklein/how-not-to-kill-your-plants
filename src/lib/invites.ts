@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
-import { invite, user } from "@/db/schema";
+import { group, groupMember, invite, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -12,6 +12,18 @@ export class InviteError extends Error {
   constructor(public readonly code: InviteErrorCode) {
     super(`Invite ${code}`);
     this.name = "InviteError";
+  }
+}
+
+export type InviteInputField = "name" | "password";
+
+export class InviteInputError extends Error {
+  constructor(
+    public readonly field: InviteInputField,
+    message: string,
+  ) {
+    super(message);
+    this.name = "InviteInputError";
   }
 }
 
@@ -28,6 +40,19 @@ export async function acceptInvite(
   token: string,
   input: { name: string; email: string; password: string },
 ): Promise<{ userId: string }> {
+  const name = input.name.trim();
+  if (!name) throw new InviteInputError("name", "Name is required");
+  const { minPasswordLength, maxPasswordLength } = (await auth.$context).password.config;
+  if (input.password.length < minPasswordLength) {
+    throw new InviteInputError(
+      "password",
+      `Password must be at least ${minPasswordLength} characters`,
+    );
+  }
+  if (input.password.length > maxPasswordLength) {
+    throw new InviteInputError("password", "Password is too long");
+  }
+
   // Atomically claim the invite: only one concurrent caller can flip used_at.
   const [claimed] = await db
     .update(invite)
@@ -53,12 +78,22 @@ export async function acceptInvite(
   try {
     const { user: created } = await auth.api.createUser({
       body: {
-        name: input.name,
+        name,
         email: input.email,
         password: input.password,
         role: "user",
       },
     });
+    const [everyone] = await db
+      .select({ id: group.id })
+      .from(group)
+      .where(eq(group.name, "Everyone"));
+    if (everyone) {
+      await db
+        .insert(groupMember)
+        .values({ groupId: everyone.id, userId: created.id })
+        .onConflictDoNothing();
+    }
     await db
       .update(invite)
       .set({ usedBy: created.id })

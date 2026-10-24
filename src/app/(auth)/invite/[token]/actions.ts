@@ -1,6 +1,6 @@
 "use server";
 
-import { acceptInvite, InviteError } from "@/lib/invites";
+import { acceptInvite, InviteError, InviteInputError } from "@/lib/invites";
 
 export type AcceptInviteResult = { ok: true } | { ok: false; error: string };
 
@@ -18,6 +18,7 @@ export async function acceptInviteAction(
     await acceptInvite(token, input);
     return { ok: true };
   } catch (err) {
+    if (err instanceof InviteInputError) return { ok: false, error: err.message };
     if (err instanceof InviteError) return { ok: false, error: MESSAGES[err.code] };
     return { ok: false, error: "Could not create the account. Check your details." };
   }
