@@ -60,7 +60,9 @@
     "justBought": "Tout juste achetée ?",
     "yes": "Oui",
     "no": "Non",
-    "confirmSave": "C'est bon, l'ajouter"
+    "confirmSave": "C'est bon, l'ajouter",
+    "photoTooLarge": "Cette photo est trop volumineuse.",
+    "photoBadType": "Veuillez utiliser une photo JPEG."
   },
   "tasks": {
     "outcome": {

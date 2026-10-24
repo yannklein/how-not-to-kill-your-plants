@@ -15,6 +15,8 @@
     "create-admin": "tsx --env-file=.env --tsconfig tsconfig.json scripts/create-admin.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1156.0",
+    "@aws-sdk/s3-request-presigner": "^3.1156.0",
     "@base-ui/react": "^1.9.0",
     "better-auth": "^1.7.12",
     "class-variance-authority": "^0.7.1",
@@ -39,6 +41,7 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
