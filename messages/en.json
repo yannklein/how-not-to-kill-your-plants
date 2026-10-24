@@ -238,5 +238,22 @@
       "mist": "Mist",
       "photo": "Take a photo of"
     }
+  },
+  "feed": {
+    "moments": {
+      "new_leaf": "New leaf",
+      "new_growth": "New growth",
+      "flower": "Flower",
+      "repotted": "Repotted"
+    },
+    "template": {
+      "thanks": "💧 Thanks for the care, {userName}!",
+      "moment": "🌱 {moment}!",
+      "photo": "📸 New photo, taken by {userName}",
+      "birthday": "{years, plural, =0 {🎂 One month with you!} one {🎂 One year with you!} other {🎂 # years with you!}}",
+      "mood": "{to, select, sulking {😤 I'm sulking a little…} other {😊 Feeling better now}}",
+      "season": "{growing, select, true {🌞 Growing season! Time to wake up} other {😴 Going into winter mode, water me less}}",
+      "first": "🌿 Hello! I just moved in."
+    }
   }
 }

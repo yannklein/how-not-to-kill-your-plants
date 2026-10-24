@@ -238,5 +238,22 @@
       "mist": "Brumiser",
       "photo": "Photographier"
     }
+  },
+  "feed": {
+    "moments": {
+      "new_leaf": "Nouvelle feuille",
+      "new_growth": "Nouvelle pousse",
+      "flower": "Fleur",
+      "repotted": "Rempotage"
+    },
+    "template": {
+      "thanks": "💧 Merci pour les soins, {userName} !",
+      "moment": "🌱 {moment} !",
+      "photo": "📸 Nouvelle photo, prise par {userName}",
+      "birthday": "{years, plural, =0 {🎂 Un mois avec vous !} one {🎂 Un an avec vous !} other {🎂 # ans avec vous !}}",
+      "mood": "{to, select, sulking {😤 Je boude un peu…} other {😊 Ça va mieux maintenant}}",
+      "season": "{growing, select, true {🌞 C'est la saison de croissance ! Je me réveille} other {😴 Je passe en mode hiver, arrosez-moi moins}}",
+      "first": "🌿 Bonjour ! Je viens d'emménager."
+    }
   }
 }

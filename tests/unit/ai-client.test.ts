@@ -88,3 +88,22 @@ describe("callStructured no-output paths", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+describe("callStructured server-side fallback", () => {
+  afterEach(() => vi.restoreAllMocks());
+  const ok = { stop_reason: "end_turn", content: [{ type: "text", text: '{"a":1}' }], usage: { input_tokens: 1, output_tokens: 1 } };
+  const call = async (fallback?: boolean) => {
+    const create = vi.spyOn(Anthropic.Beta.Messages.prototype, "create").mockResolvedValue(ok as never);
+    await callStructured({ model: "claude-haiku-5-5", maxTokens: 10, system: "s", content: "c", schema: z.object({ a: z.number() }), fallback });
+    return create.mock.calls[0][0] as unknown as Record<string, unknown>;
+  };
+
+  it("asks for the fallback by default", async () => {
+    expect(await call()).toMatchObject({ betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+  });
+  it("leaves it out when the model has none (Haiku 5.5)", async () => {
+    const params = await call(false);
+    expect(params).not.toHaveProperty("fallbacks");
+    expect(params).not.toHaveProperty("betas");
+  });
+});

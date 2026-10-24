@@ -72,12 +72,14 @@ export async function callStructured(args: {
   system: string;
   content: string | BetaContentBlockParam[];
   schema: z.ZodType;
+  /** Server-side refusal fallback; Haiku 5.5 has none, so callers on Haiku pass false. */
+  fallback?: boolean;
 }): Promise<StructuredOutput> {
+  const fallback = args.fallback ?? true;
   const message = await getClient().beta.messages.create({
     model: args.model,
     max_tokens: args.maxTokens,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
+    ...(fallback ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
     system: [{ type: "text", text: args.system, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: args.content }],
     output_config: { effort: "medium", format: zodOutputFormat(args.schema) },

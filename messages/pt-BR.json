@@ -238,5 +238,22 @@
       "mist": "Borrifar",
       "photo": "Fotografar"
     }
+  },
+  "feed": {
+    "moments": {
+      "new_leaf": "Folha nova",
+      "new_growth": "Broto novo",
+      "flower": "Flor",
+      "repotted": "Troca de vaso"
+    },
+    "template": {
+      "thanks": "💧 Valeu pelo cuidado, {userName}!",
+      "moment": "🌱 {moment}!",
+      "photo": "📸 Foto nova, tirada por {userName}",
+      "birthday": "{years, plural, =0 {🎂 Um mês com vocês!} one {🎂 Um ano com vocês!} other {🎂 # anos com vocês!}}",
+      "mood": "{to, select, sulking {😤 Estou meio emburrada…} other {😊 Já estou melhor}}",
+      "season": "{growing, select, true {🌞 Época de crescer! Hora de acordar} other {😴 Entrando no modo inverno, me regue menos}}",
+      "first": "🌿 Oi! Acabei de chegar."
+    }
   }
 }
