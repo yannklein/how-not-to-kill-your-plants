@@ -39,6 +39,8 @@ describe("feed cron", () => {
     expect(await runMoodChanges("2026-11-10")).toBe(0);
     const [ev] = await events("mood");
     expect(ev.payload).toMatchObject({ from: "happy", to: "sulking" });
+    const [after] = await db.select().from(plant).where(eq(plant.id, p.id));
+    expect(after.lastMoodAt).toBeInstanceOf(Date);
   });
 
   it("does not post mood changes that don't involve sulking", async () => {

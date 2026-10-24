@@ -72,7 +72,7 @@ export async function runMoodChanges(today: string): Promise<number> {
       await createEvent(p.id, "mood", { from, to });
       posted++;
     }
-    await db.update(plant).set({ lastMood: to }).where(eq(plant.id, p.id));
+    await db.update(plant).set({ lastMood: to, lastMoodAt: new Date() }).where(eq(plant.id, p.id));
   }
   return posted;
 }
