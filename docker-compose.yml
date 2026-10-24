@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: plants
+      POSTGRES_PASSWORD: plants
+      POSTGRES_DB: plants
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  db-test:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: plants
+      POSTGRES_PASSWORD: plants
+      POSTGRES_DB: plants_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  minio:
+    # minio/minio is no longer published on Docker Hub; bitnamilegacy/minio is
+    # the available mirror and also ships the `mc` client used by minio-init.
+    image: bitnamilegacy/minio:latest
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/bitnami/minio/data
+
+  minio-init:
+    image: bitnamilegacy/minio:latest
+    depends_on:
+      - minio
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minio minio-secret; do sleep 1; done;
+      mc mb --ignore-existing local/plants;
+      exit 0;
+      "
+
+volumes:
+  db-data:
+  minio-data:
