@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { POST } from "@/app/api/cron/tick/route";
 import { careTask, group, home, plant, species } from "@/db/schema";
-import { getOrCreateSpecies } from "@/lib/ai/care-profile";
+import { ensureCareProfile, getOrCreateSpecies } from "@/lib/ai/care-profile";
 import { db, resetDb } from "./setup";
 
 const tick = (auth?: string) =>
@@ -61,5 +61,29 @@ describe("POST /api/cron/tick", () => {
     expect(await (await tick("Bearer test")).json()).toEqual({ profilesReady: 0, digestsSent: 0 });
     const after = await db.select().from(careTask).where(and(eq(careTask.plantId, p.id)));
     expect(after).toHaveLength(before.length);
+  });
+});
+
+describe("backfill of species that became ready outside the tick", () => {
+  it("creates missing tasks once, leaving the water task unchanged", async () => {
+    const sp = await getOrCreateSpecies("Pilea peperomioides", "Chinese money plant");
+    // ready via the admin Retry / pre-warm path, not the tick
+    await ensureCareProfile(sp.id);
+    const [g] = await db.insert(group).values({ name: "G" }).returning({ id: group.id });
+    const [p] = await db
+      .insert(plant)
+      .values({ groupId: g.id, speciesId: sp.id, name: "Pip", acquiredOn: "2026-10-20", justBought: true })
+      .returning({ id: plant.id });
+    await db.insert(careTask).values({ plantId: p.id, type: "water", dueOn: "2026-10-27", state: { keep: 1 } });
+
+    await tick("Bearer test");
+    const tasks = await db.select().from(careTask).where(eq(careTask.plantId, p.id));
+    expect(tasks.map((t) => t.type)).toEqual(expect.arrayContaining(["water", "settle_check", "fertilize"]));
+    const water = tasks.find((t) => t.type === "water")!;
+    expect(water.dueOn).toBe("2026-10-27");
+    expect(water.state).toEqual({ keep: 1 });
+
+    await tick("Bearer test");
+    expect(await db.select().from(careTask).where(eq(careTask.plantId, p.id))).toHaveLength(tasks.length);
   });
 });

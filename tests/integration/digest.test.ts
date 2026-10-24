@@ -95,6 +95,30 @@ describe("runDigests", () => {
     expect(await runDigests(new Date("2026-11-05T07:45:00Z"), deps)).toEqual({ sent: 1 });
     spy.mockRestore();
     const [y] = await db.select().from(user).where(eq(user.id, "y"));
-    expect(y.lastDigestOn).toBeNull();
+    expect(y.lastDigestOn).toBe("2026-11-05"); // R17: evaluated once per day, no later retry
+  });
+
+  it("evaluates once per day: nothing due at push time means no digest later that day", async () => {
+    await seed({ due: false });
+    expect(await runDigests(new Date("2026-11-05T07:45:00Z"), deps)).toEqual({ sent: 0 }); // 08:45
+    await db.update(careTask).set({ dueOn: "2026-11-05" });
+    expect(await runDigests(new Date("2026-11-05T14:05:00Z"), deps)).toEqual({ sent: 0 }); // 15:05
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("skips the digest when the first tick is more than 3 hours past push time", async () => {
+    await seed();
+    expect(await runDigests(new Date("2026-11-05T11:00:00Z"), deps)).toEqual({ sent: 0 }); // 12:00
+    expect(send).not.toHaveBeenCalled();
+    const [u] = await db.select().from(user).where(eq(user.id, "y"));
+    expect(u.lastDigestOn).toBe("2026-11-05");
+  });
+
+  it("overlapping ticks send one digest", async () => {
+    await seed();
+    const now = new Date("2026-11-05T07:45:00Z");
+    const [a, b] = await Promise.all([runDigests(now, deps), runDigests(now, deps)]);
+    expect(a.sent + b.sent).toBe(1);
+    expect(send).toHaveBeenCalledTimes(1);
   });
 });

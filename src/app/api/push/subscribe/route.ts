@@ -1,7 +1,5 @@
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "@/db/client";
-import { pushSubscription } from "@/db/schema";
+import { deletePushSubscription, upsertPushSubscription } from "@/lib/push/subscriptions";
 import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -29,13 +27,7 @@ export async function POST(req: Request) {
   const parsed = Subscribe.safeParse(await body(req));
   if (!parsed.success) return invalid();
   const { endpoint, keys } = parsed.data;
-  await db
-    .insert(pushSubscription)
-    .values({ userId: me.id, endpoint, p256dh: keys.p256dh, auth: keys.auth })
-    .onConflictDoUpdate({
-      target: pushSubscription.endpoint,
-      set: { userId: me.id, p256dh: keys.p256dh, auth: keys.auth },
-    });
+  await upsertPushSubscription(me.id, { endpoint, p256dh: keys.p256dh, auth: keys.auth });
   return Response.json({ ok: true });
 }
 
@@ -44,8 +36,6 @@ export async function DELETE(req: Request) {
   if (!me) return unauthorized();
   const parsed = Unsubscribe.safeParse(await body(req));
   if (!parsed.success) return invalid();
-  await db
-    .delete(pushSubscription)
-    .where(and(eq(pushSubscription.endpoint, parsed.data.endpoint), eq(pushSubscription.userId, me.id)));
+  await deletePushSubscription(me.id, parsed.data.endpoint);
   return Response.json({ ok: true });
 }

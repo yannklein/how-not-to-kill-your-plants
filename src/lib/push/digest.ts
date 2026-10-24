@@ -11,6 +11,9 @@ import { localTimeIn, todayIn } from "@/lib/time";
 import { sendPush, type SendPush } from "./send";
 
 const MAX_NAMES = 4;
+const LATE_WINDOW_MINUTES = 3 * 60;
+
+const minutesOf = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 
 async function homeSettings() {
   const [row] = await db.select().from(home).limit(1);
@@ -36,8 +39,8 @@ async function digestMessage(locale: string, groups: DueGroup[]) {
 
 /**
  * Morning digest: one push per subscription for each user whose local time has
- * reached their push time, who has due tasks, and who has not had one today.
- * Idempotent per day. One user's failure never stops the others.
+ * reached their push time (within 3 hours of it), who has due tasks, and who has
+ * not been evaluated today. Evaluated once per day.  One user's failure never stops the others.
  */
 export async function runDigests(
   now: Date,
@@ -49,23 +52,36 @@ export async function runDigests(
   const localTime = localTimeIn(timezone, now);
 
   const candidates = await db
-    .select({ id: user.id, locale: user.locale, pushTime: user.pushTime, lastDigestOn: user.lastDigestOn })
+    .select({ id: user.id, locale: user.locale, pushTime: user.pushTime })
     .from(user)
-    .where(sql`exists (select 1 from ${pushSubscription} where ${pushSubscription.userId} = ${user.id})`);
+    .where(
+      and(
+        sql`exists (select 1 from ${pushSubscription} where ${pushSubscription.userId} = ${user.id})`,
+        sql`${user.lastDigestOn} is distinct from ${today}`,
+      ),
+    );
 
   let sent = 0;
   for (const u of candidates) {
-    if (u.lastDigestOn === today || localTime < u.pushTime) continue;
+    if (localTime < u.pushTime) continue;
     try {
+      // R17: evaluated once per day. Claim atomically before sending so overlapping ticks can't double-send.
+      const claimed = await db
+        .update(user)
+        .set({ lastDigestOn: today })
+        .where(and(eq(user.id, u.id), sql`${user.lastDigestOn} is distinct from ${today}`))
+        .returning({ id: user.id });
+      if (claimed.length === 0) continue;
+      // Missed the morning (e.g. cron outage): no late digest.
+      if (minutesOf(localTime) - minutesOf(u.pushTime) > LATE_WINDOW_MINUTES) continue;
+
       const groups = await dueTasksForUser(u.id, today);
       if (groups.length === 0) continue;
       const { title, body } = await digestMessage(u.locale, groups);
       const subs = await db.select().from(pushSubscription).where(eq(pushSubscription.userId, u.id));
-      let attempted = 0;
       for (const sub of subs) {
         try {
           const result = await send(sub, { title, body, url: "/" });
-          attempted++;
           if (result === "gone") {
             await db.delete(pushSubscription).where(eq(pushSubscription.id, sub.id));
           } else {
@@ -75,10 +91,6 @@ export async function runDigests(
           console.error(`push send failed for user ${u.id}`, error);
         }
       }
-      // Only mark the day done once a push was attempted (a "gone" attempt has nothing to retry).
-      if (attempted > 0) {
-        await db.update(user).set({ lastDigestOn: today }).where(eq(user.id, u.id));
-      }
     } catch (error) {
       console.error(`digest failed for user ${u.id}`, error);
     }
@@ -87,49 +99,54 @@ export async function runDigests(
 }
 
 /** Creates the initial tasks a plant is missing; existing tasks (and their history) are untouched. */
-async function backfillTasks(speciesId: string, profile: CareProfile, today: string, hemisphere: "N" | "S") {
-  const plants = await db
-    .select()
-    .from(plant)
-    .where(and(eq(plant.speciesId, speciesId), eq(plant.status, "alive")));
-  for (const p of plants) {
-    const tasks = initialTasks({
-      today,
-      acquiredOn: p.acquiredOn,
-      justBought: p.justBought,
-      profile,
-      hemisphere,
-    });
-    await db
-      .insert(careTask)
-      .values(tasks.map((t) => ({ plantId: p.id, type: t.type, dueOn: t.dueOn, state: t.state ?? {} })))
-      .onConflictDoNothing({ target: [careTask.plantId, careTask.type] });
-  }
+async function backfillPlant(p: typeof plant.$inferSelect, profile: CareProfile, today: string, hemisphere: "N" | "S") {
+  const tasks = initialTasks({ today, acquiredOn: p.acquiredOn, justBought: p.justBought, profile, hemisphere });
+  await db
+    .insert(careTask)
+    .values(tasks.map((t) => ({ plantId: p.id, type: t.type, dueOn: t.dueOn, state: t.state ?? {} })))
+    .onConflictDoNothing({ target: [careTask.plantId, careTask.type] });
 }
 
 /**
- * One care-profile attempt per pending species per tick. When a profile becomes
- * ready, its alive plants get any missing initial tasks. Returns the number of
- * profiles that became ready.
+ * One care-profile attempt per pending species per tick, then a backfill pass:
+ * alive plants whose species is ready (however it got there: tick, admin Retry,
+ * add-plant pre-warm) but that have no fertilize task get their missing initial
+ * tasks. Returns the number of profiles that became ready in this tick.
  */
 export async function runCareProfileRetries(now: Date = new Date()): Promise<number> {
   const pending = await db
     .select({ id: species.id })
     .from(species)
     .where(eq(species.careProfileStatus, "pending"));
-  const { timezone, hemisphere } = await homeSettings();
-  const today = todayIn(timezone, now);
 
   let ready = 0;
   for (const { id } of pending) {
     try {
-      if ((await ensureCareProfile(id)) !== "ready") continue;
-      const [sp] = await db.select().from(species).where(eq(species.id, id));
-      if (!sp?.careProfile) continue;
-      await backfillTasks(id, sp.careProfile as unknown as CareProfile, today, hemisphere);
-      ready++;
+      if ((await ensureCareProfile(id)) === "ready") ready++;
     } catch (error) {
       console.error(`care profile retry failed for species ${id}`, error);
+    }
+  }
+
+  const { timezone, hemisphere } = await homeSettings();
+  const today = todayIn(timezone, now);
+  const missing = await db
+    .select({ plant, profile: species.careProfile })
+    .from(plant)
+    .innerJoin(species, eq(plant.speciesId, species.id))
+    .where(
+      and(
+        eq(plant.status, "alive"),
+        eq(species.careProfileStatus, "ready"),
+        sql`not exists (select 1 from ${careTask} where ${careTask.plantId} = ${plant.id} and ${careTask.type} = 'fertilize')`,
+      ),
+    );
+  for (const { plant: p, profile } of missing) {
+    if (!profile) continue;
+    try {
+      await backfillPlant(p, profile as unknown as CareProfile, today, hemisphere);
+    } catch (error) {
+      console.error(`task backfill failed for plant ${p.id}`, error);
     }
   }
   return ready;
