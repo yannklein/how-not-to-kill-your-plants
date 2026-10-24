@@ -9,6 +9,7 @@ import {
   runMoodChanges,
   runSeasonChanges,
 } from "@/lib/feed/cron";
+import { runPatternChecks, runPhotoChecks } from "@/lib/gardener/checks";
 import { runCareProfileRetries, runDigests } from "@/lib/push/digest";
 import { todayIn } from "@/lib/time";
 
@@ -36,9 +37,21 @@ export async function POST(req: Request) {
   const moodPosts = await step("moods", () => runMoodChanges(today));
   const seasonPosts = await step("seasons", () => runSeasonChanges(today));
   const digestsSent = await step("digests", async () => (await runDigests(now)).sent);
-  // Optional AI text last, so a slow model never delays the morning push.
+  // Optional AI work last, so a slow model never delays the morning push.
+  const photoChecks = await step("photo checks", () => runPhotoChecks());
+  const patternAlerts = await step("pattern checks", () => runPatternChecks(today));
   const textsWritten = await step("feed texts", () => runFeedTextFill());
-  return Response.json({ profilesReady, photoTasks, birthdays, moodPosts, seasonPosts, textsWritten, digestsSent });
+  return Response.json({
+    profilesReady,
+    photoTasks,
+    birthdays,
+    moodPosts,
+    seasonPosts,
+    digestsSent,
+    photoChecks,
+    patternAlerts,
+    textsWritten,
+  });
 }
 
 async function step(name: string, run: () => Promise<number>): Promise<number> {

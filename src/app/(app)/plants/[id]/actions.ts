@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { runFeedTextFill } from "@/lib/feed/cron";
 import { deleteMoment, logMoment } from "@/lib/feed/events";
+import { runPhotoChecks } from "@/lib/gardener/checks";
 import type { MomentType } from "@/lib/feed/types";
 import { addPlantPhoto } from "@/lib/plants/photos";
 import { requireUser } from "@/lib/session";
@@ -17,6 +18,8 @@ export async function addPlantPhotoAction(plantId: string, draftKey: string, mom
   const user = await requireUser();
   await addPlantPhoto(user.id, plantId, draftKey, momentType);
   fillTextsSoon();
+  // The gardener looks at the new photo in the background; the upload never waits for it.
+  after(() => runPhotoChecks().catch((err) => console.error("photo check failed", err)));
   revalidatePath(`/plants/${plantId}`);
   revalidatePath("/");
 }

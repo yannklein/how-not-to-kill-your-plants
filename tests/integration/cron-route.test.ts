@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { POST } from "@/app/api/cron/tick/route";
-import { careTask, group, home, plant, species } from "@/db/schema";
+import { careTask, gardenerAlert, group, home, photo, plant, species, user } from "@/db/schema";
 import { ensureCareProfile, getOrCreateSpecies } from "@/lib/ai/care-profile";
 import { db, resetDb } from "./setup";
 
@@ -60,7 +60,7 @@ describe("POST /api/cron/tick", () => {
     const before = await db.select().from(careTask).where(eq(careTask.plantId, p.id));
     const body = await (await tick("Bearer test")).json();
     expect(body).toMatchObject({ profilesReady: 0, digestsSent: 0 });
-    for (const key of ["photoTasks", "birthdays", "moodPosts", "seasonPosts", "textsWritten"])
+    for (const key of ["photoTasks", "birthdays", "moodPosts", "seasonPosts", "textsWritten", "photoChecks", "patternAlerts"])
       expect(typeof body[key], key).toBe("number");
     const after = await db.select().from(careTask).where(and(eq(careTask.plantId, p.id)));
     expect(after).toHaveLength(before.length);
@@ -88,5 +88,17 @@ describe("backfill of species that became ready outside the tick", () => {
 
     await tick("Bearer test");
     expect(await db.select().from(careTask).where(eq(careTask.plantId, p.id))).toHaveLength(tasks.length);
+  });
+
+  it("checks new photos and warns about a sick plant", async () => {
+    await db.insert(user).values({ id: "u-y", name: "Yann", email: "y@example.com" });
+    const [g] = await db.insert(group).values({ name: "G" }).returning({ id: group.id });
+    const [p] = await db.insert(plant).values({ groupId: g.id, name: "Sick fern", acquiredOn: "2026-10-01" }).returning();
+    await db.insert(photo).values({ plantId: p.id, userId: "u-y", objectKey: "photos/draft/s.jpg", width: 1, height: 1 });
+
+    const body = await (await tick("Bearer test")).json();
+    expect(body.photoChecks).toBe(1);
+    const alerts = await db.select().from(gardenerAlert).where(eq(gardenerAlert.plantId, p.id));
+    expect(alerts.map((a) => a.status)).toEqual(["open"]);
   });
 });
