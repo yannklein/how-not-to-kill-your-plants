@@ -7,14 +7,13 @@ import { ensureCareProfile, getOrCreateSpecies } from "@/lib/ai/care-profile";
 import { CareProfile } from "@/lib/ai/schemas";
 import { initialTasks } from "@/lib/care/schedule";
 import { jpegSize } from "@/lib/image/jpeg-size";
+import { assertDraftKeys } from "@/lib/photos";
 import { getObjectBytes } from "@/lib/storage";
 import { FALLBACK_PROFILE } from "@/lib/tasks/complete";
 import { todayIn } from "@/lib/time";
 
 /** How long saving waits for a species' care profile before falling back to the water task only. */
 export const CARE_PROFILE_WAIT_MS = 20_000;
-export const DRAFT_PREFIX = "photos/draft/";
-export const MAX_PHOTOS = 2;
 
 export type CreatePlantInput = {
   photoKeys: string[];
@@ -59,13 +58,7 @@ export async function createPlantWithTasks(
   const scientificName = input.scientificName.trim();
   if (!name) throw new CreatePlantInputError("A plant name is required");
   if (!scientificName) throw new CreatePlantInputError("A species is required");
-  const photoKeys = [...new Set(input.photoKeys)];
-  if (photoKeys.length === 0 || photoKeys.length > MAX_PHOTOS) {
-    throw new CreatePlantInputError(`Between 1 and ${MAX_PHOTOS} photos are required`);
-  }
-  if (!photoKeys.every((k) => k.startsWith(DRAFT_PREFIX) && !k.includes(".."))) {
-    throw new CreatePlantInputError("Photos must be uploaded drafts");
-  }
+  const photoKeys = assertDraftKeys(input.photoKeys);
 
   if (!(await visibleGroupIds(userId)).includes(input.groupId)) notFound();
 

@@ -7,6 +7,7 @@ import {
   retryCareProfile,
 } from "@/lib/ai/care-profile";
 import { identifyPlant } from "@/lib/ai/identify";
+import { MOCK_USAGE, mockProfile } from "@/lib/ai/mock";
 import { CareProfile } from "@/lib/ai/schemas";
 import { db, resetDb } from "./setup";
 
@@ -51,6 +52,20 @@ describe("ensureCareProfile (AI_MODE=mock)", () => {
     const generate = vi.fn();
     await expect(ensureCareProfile(sp.id, { generate })).resolves.toBe("ready");
     expect(generate).not.toHaveBeenCalled();
+  });
+
+  it("shares one generation between concurrent calls for the same species", async () => {
+    const sp = await getOrCreateSpecies("Pilea peperomioides", "Chinese money plant");
+    const generate = vi.fn(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+      return { output: mockProfile, refused: false, usage: MOCK_USAGE };
+    });
+    const results = await Promise.all([
+      ensureCareProfile(sp.id, { generate }),
+      ensureCareProfile(sp.id, { generate }),
+    ]);
+    expect(results).toEqual(["ready", "ready"]);
+    expect(generate).toHaveBeenCalledTimes(1);
   });
 
   it("makes one attempt per call: pending after one failure, failed after three", async () => {

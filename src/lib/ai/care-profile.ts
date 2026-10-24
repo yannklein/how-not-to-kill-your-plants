@@ -69,10 +69,26 @@ async function recordFailure(speciesId: string): Promise<void> {
     .where(eq(species.id, speciesId));
 }
 
-/** One generation attempt per call; the caller (or cron) retries pending species. */
-export async function ensureCareProfile(
+const inFlight = new Map<string, Promise<"ready" | "failed">>();
+
+/**
+ * One generation attempt per call; the caller (or cron) retries pending species.
+ * Concurrent calls for the same species in this process share one attempt.
+ */
+export function ensureCareProfile(
   speciesId: string,
   deps: CareProfileDeps = {},
+): Promise<"ready" | "failed"> {
+  const running = inFlight.get(speciesId);
+  if (running) return running;
+  const attempt = generateProfile(speciesId, deps).finally(() => inFlight.delete(speciesId));
+  inFlight.set(speciesId, attempt);
+  return attempt;
+}
+
+async function generateProfile(
+  speciesId: string,
+  deps: CareProfileDeps,
 ): Promise<"ready" | "failed"> {
   const generate = deps.generate ?? (env.AI_MODE === "mock" ? generateMock : generateLive);
 

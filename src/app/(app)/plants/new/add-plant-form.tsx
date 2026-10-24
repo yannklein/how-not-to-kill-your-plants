@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { IdentifyOutcome } from "@/lib/ai/identify";
+import { NOT_A_PLANT } from "@/lib/ai/schemas";
 import { downscaleImage } from "@/lib/image/downscale";
 import { cn } from "@/lib/utils";
 import { uploadDraftPhoto } from "../upload-action";
@@ -52,6 +53,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
   const [error, setError] = useState<string | null>(null);
   const run = useRef(0); // ignores results of superseded uploads/identifications
   const photosRef = useRef<DraftPhoto[]>([]);
+  const resultRef = useRef<IdentifyOutcome | null>(null);
 
   useEffect(
     () => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.previewUrl)),
@@ -94,6 +96,11 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
     } catch (err) {
       console.error(err);
       if (mine !== run.current) return;
+      if (photosRef.current.length && !resultRef.current) {
+        // Photo is uploaded but identification threw: let the user type the species.
+        applyIdentification({ ...NOT_A_PLANT, failure: "error" });
+        return;
+      }
       setError(t("error"));
       setPhase(photosRef.current.length ? "confirm" : "photo");
     }
@@ -101,6 +108,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
 
   function applyIdentification(identified: IdentifyOutcome) {
     const usable = identified.isPlant && identified.candidates.length > 0;
+    resultRef.current = identified;
     setResult(identified);
     setSelected(usable ? 0 : "other");
     setName(identified.suggestedNames[0] ?? "");
@@ -114,7 +122,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
     selected === "other"
       ? { scientificName: otherSpecies.trim(), commonName: otherSpecies.trim() }
       : (candidates[selected] ?? { scientificName: "", commonName: "" });
-  const canSave = !saving && !!name.trim() && !!species.scientificName && !!groupId;
+  const canSave = !saving && !!species.scientificName && !!groupId;
 
   async function onSave() {
     if (!canSave || !result) return;
@@ -126,7 +134,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
         photoKeys: photos.map((p) => p.key),
         scientificName: species.scientificName,
         commonName: species.commonName,
-        name: name.trim(),
+        name: name.trim() || species.scientificName,
         persona: result.isPlant && result.persona.summary ? result.persona : null,
         groupId,
         spotId: spotId || null,
@@ -273,6 +281,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
               id="plant-name"
               className="h-11 text-base"
               value={name}
+              placeholder={species.scientificName}
               onChange={(e) => setName(e.target.value)}
             />
             {result.suggestedNames.length > 1 && (

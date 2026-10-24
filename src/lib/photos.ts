@@ -2,6 +2,21 @@ import { photoKey, putObject, signedUrl } from "@/lib/storage";
 
 export const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
 
+export const DRAFT_PREFIX = "photos/draft/";
+export const MAX_PHOTOS = 2;
+
+/** Dedupes and validates keys of uploaded draft photos (1..MAX_PHOTOS). Throws otherwise. */
+export function assertDraftKeys(keys: string[]): string[] {
+  const unique = [...new Set(keys)];
+  if (unique.length === 0 || unique.length > MAX_PHOTOS) {
+    throw new Error(`Between 1 and ${MAX_PHOTOS} photos are required`);
+  }
+  if (!unique.every((k) => k.startsWith(DRAFT_PREFIX) && !k.includes(".."))) {
+    throw new Error("Photos must be uploaded drafts");
+  }
+  return unique;
+}
+
 export type PhotoErrorCode = "too_large" | "bad_type";
 
 export class PhotoError extends Error {
