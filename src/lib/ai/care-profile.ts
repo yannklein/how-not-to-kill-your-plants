@@ -1,12 +1,10 @@
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { species } from "@/db/schema";
 import { env } from "@/lib/env";
 import { withBudget } from "./budget";
-import { getClient } from "./client";
+import { callStructured, type StructuredOutput } from "./client";
 import { mockProfile, MOCK_USAGE } from "./mock";
-import type { Usage } from "./pricing";
 import { CareProfile, checkCareProfile, normalizeScientificName } from "./schemas";
 
 const MODEL = "claude-sonnet-5-5" as const;
@@ -42,71 +40,78 @@ export async function getOrCreateSpecies(
   return row;
 }
 
-type Generated = { result: CareProfile; usage: Usage };
 export type CareProfileDeps = {
-  /** Test seam: replaces the model call (and mock-mode fixture). */
-  generate?: (sp: Species) => Promise<Generated>;
+  /** Test seam: replaces the model call (and the mock-mode fixture). */
+  generate?: (sp: Species) => Promise<StructuredOutput>;
 };
 
-async function generateLive(sp: Species): Promise<Generated> {
-  const response = await getClient().messages.parse({
+function generateLive(sp: Species): Promise<StructuredOutput> {
+  return callStructured({
     model: MODEL,
-    max_tokens: 8000,
-    system: [
-      { type: "text", text: CARE_PROFILE_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
-    ],
-    messages: [
-      {
-        role: "user",
-        content: `Write the care profile for: ${sp.scientificName}.`,
-      },
-    ],
-    output_config: { effort: "medium", format: zodOutputFormat(CareProfile) },
+    maxTokens: 8000,
+    system: CARE_PROFILE_SYSTEM_PROMPT,
+    content: `Write the care profile for: ${sp.scientificName}.`,
+    schema: CareProfile,
   });
-  if (response.stop_reason === "refusal" || response.parsed_output == null) {
-    throw new Error("Care profile generation was refused or returned no output");
-  }
-  return { result: response.parsed_output, usage: response.usage };
 }
 
-async function generateMock(): Promise<Generated> {
-  return { result: mockProfile, usage: MOCK_USAGE };
+async function generateMock(): Promise<StructuredOutput> {
+  return { output: mockProfile, refused: false, usage: MOCK_USAGE };
 }
 
+async function recordFailure(speciesId: string): Promise<void> {
+  await db
+    .update(species)
+    .set({
+      profileAttempts: sql`${species.profileAttempts} + 1`,
+      careProfileStatus: sql`case when ${species.profileAttempts} + 1 >= ${MAX_PROFILE_ATTEMPTS} then 'failed' else 'pending' end`,
+    })
+    .where(eq(species.id, speciesId));
+}
+
+/** One generation attempt per call; the caller (or cron) retries pending species. */
 export async function ensureCareProfile(
   speciesId: string,
   deps: CareProfileDeps = {},
 ): Promise<"ready" | "failed"> {
   const generate = deps.generate ?? (env.AI_MODE === "mock" ? generateMock : generateLive);
 
-  for (;;) {
-    const [sp] = await db.select().from(species).where(eq(species.id, speciesId));
-    if (!sp) throw new Error(`Species ${speciesId} not found`);
-    if (sp.careProfileStatus === "ready") return "ready";
-    if (sp.careProfileStatus === "failed" || sp.profileAttempts >= MAX_PROFILE_ATTEMPTS) {
-      return "failed";
-    }
+  const [sp] = await db.select().from(species).where(eq(species.id, speciesId));
+  if (!sp) throw new Error(`Species ${speciesId} not found`);
+  if (sp.careProfileStatus === "ready") return "ready";
+  if (sp.profileAttempts >= MAX_PROFILE_ATTEMPTS) return "failed";
 
-    try {
-      const profile = await withBudget("care_profile", null, MODEL, async () => {
-        const out = await generate(sp);
-        checkCareProfile(CareProfile.parse(out.result));
-        return out;
-      });
-      // Conditional on not-yet-ready so a concurrent winner is not overwritten.
-      await db
-        .update(species)
-        .set({ careProfile: profile, careProfileStatus: "ready" })
-        .where(sql`${species.id} = ${speciesId} and ${species.careProfileStatus} <> 'ready'`);
-      return "ready";
-    } catch {
-      await db
-        .update(species)
-        .set({
-          profileAttempts: sql`${species.profileAttempts} + 1`,
-          careProfileStatus: sql`case when ${species.profileAttempts} + 1 >= ${MAX_PROFILE_ATTEMPTS} then 'failed' else 'pending' end`,
-        })
-        .where(eq(species.id, speciesId));
-    }
+  try {
+    // Usage is recorded by withBudget whenever the API returned a response,
+    // even if the output turns out to be unusable (validated below).
+    const out = await withBudget("care_profile", null, MODEL, async () => {
+      const res = await generate(sp);
+      return { result: res, usage: res.usage };
+    });
+    if (out.refused) throw new Error("Care profile generation was refused");
+    const profile = CareProfile.parse(out.output);
+    checkCareProfile(profile);
+    // Conditional on not-yet-ready so a concurrent winner is not overwritten.
+    await db
+      .update(species)
+      .set({ careProfile: profile, careProfileStatus: "ready" })
+      .where(sql`${species.id} = ${speciesId} and ${species.careProfileStatus} <> 'ready'`);
+    return "ready";
+  } catch (error) {
+    console.error(`ensureCareProfile failed for species ${speciesId}`, error);
+    await recordFailure(speciesId);
+    return "failed";
   }
+}
+
+/** Admin "Retry": reset the failure state and make a fresh attempt. */
+export async function retryCareProfile(
+  speciesId: string,
+  deps: CareProfileDeps = {},
+): Promise<"ready" | "failed"> {
+  await db
+    .update(species)
+    .set({ careProfileStatus: "pending", profileAttempts: 0 })
+    .where(eq(species.id, speciesId));
+  return ensureCareProfile(speciesId, deps);
 }

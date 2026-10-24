@@ -10,6 +10,7 @@ import {
   createInviteAction,
   deleteSpot,
   resetPasswordAction,
+  retryCareProfileAction,
   saveHome,
   setAiCap,
   upsertGroup,
@@ -356,5 +357,21 @@ export function AiCapForm({ initial }: { initial: number }) {
       </Button>
       <StatusLine status={status} okText={t("saved")} />
     </form>
+  );
+}
+
+export function RetryCareProfile({ speciesId, name }: { speciesId: string; name: string }) {
+  const t = useTranslations("settings.admin");
+  const { pending, status, submit } = useSubmit();
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm italic">{name}</span>
+        <Button type="button" disabled={pending} onClick={() => submit(() => retryCareProfileAction(speciesId))}>
+          {t("retry")}
+        </Button>
+      </div>
+      <StatusLine status={status} okText={t("saved")} />
+    </div>
   );
 }

@@ -1,10 +1,9 @@
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { Locale } from "@/i18n/locales";
 import { env } from "@/lib/env";
 import { withBudget } from "./budget";
-import { getClient } from "./client";
+import { callStructured, type StructuredOutput } from "./client";
 import { mockIdentify, MOCK_USAGE } from "./mock";
-import { NOT_A_PLANT, IdentifyResult, trimIdentify } from "./schemas";
+import { IdentifyResult, NOT_A_PLANT, trimIdentify } from "./schemas";
 
 const MODEL = "claude-sonnet-5-5" as const;
 
@@ -19,44 +18,63 @@ Rules:
 - Give exactly 3 playful, affectionate suggestedNames and a persona: a short playful summary and exactly 3 personality traits.
 - Write all user-facing strings (commonName, suggestedNames, persona) in the language requested in the user message. Scientific names stay in Latin.`;
 
-type IdentifyInput = {
+export type IdentifyInput = {
   images: { base64: string; mediaType: "image/jpeg" }[];
   locale: Locale;
   userId: string;
 };
 
-async function identifyLive(input: IdentifyInput) {
-  const response = await getClient().messages.parse({
+export type IdentifyOutcome = IdentifyResult & {
+  /** Set when the model could not answer; the UI should fall back to free-text species entry. */
+  failure?: "refused" | "error";
+};
+
+export type IdentifyDeps = {
+  /** Test seam: replaces the model call (and the mock-mode fixture). */
+  call?: (input: IdentifyInput) => Promise<StructuredOutput>;
+};
+
+function callLive(input: IdentifyInput): Promise<StructuredOutput> {
+  return callStructured({
     model: MODEL,
-    max_tokens: 4000,
-    system: [
-      { type: "text", text: IDENTIFY_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
+    maxTokens: 4000,
+    system: IDENTIFY_SYSTEM_PROMPT,
+    content: [
+      ...input.images.map((img) => ({
+        type: "image" as const,
+        source: { type: "base64" as const, media_type: img.mediaType, data: img.base64 },
+      })),
+      { type: "text" as const, text: `Identify this plant. Answer in locale: ${input.locale}.` },
     ],
-    messages: [
-      {
-        role: "user",
-        content: [
-          ...input.images.map((img) => ({
-            type: "image" as const,
-            source: { type: "base64" as const, media_type: img.mediaType, data: img.base64 },
-          })),
-          { type: "text" as const, text: `Identify this plant. Answer in locale: ${input.locale}.` },
-        ],
-      },
-    ],
-    output_config: { effort: "medium", format: zodOutputFormat(IdentifyResult) },
+    schema: IdentifyResult,
   });
-  const refused = response.stop_reason === "refusal" || response.parsed_output == null;
-  return {
-    result: refused ? NOT_A_PLANT : trimIdentify(response.parsed_output!),
-    usage: response.usage,
-  };
 }
 
-export async function identifyPlant(input: IdentifyInput): Promise<IdentifyResult> {
-  return withBudget("identify", input.userId, MODEL, async () =>
-    env.AI_MODE === "mock"
-      ? { result: mockIdentify, usage: MOCK_USAGE }
-      : identifyLive(input),
-  );
+async function callMock(): Promise<StructuredOutput> {
+  return { output: mockIdentify, refused: false, usage: MOCK_USAGE };
+}
+
+/** Never throws for model, API or parse failures; see `failure`. */
+export async function identifyPlant(
+  input: IdentifyInput,
+  deps: IdentifyDeps = {},
+): Promise<IdentifyOutcome> {
+  const call = deps.call ?? (env.AI_MODE === "mock" ? callMock : callLive);
+  let raw: StructuredOutput;
+  try {
+    raw = await withBudget("identify", input.userId, MODEL, async () => {
+      const out = await call(input);
+      return { result: out, usage: out.usage };
+    });
+  } catch (error) {
+    console.error("identifyPlant failed", error);
+    return { ...NOT_A_PLANT, failure: "error" };
+  }
+  if (raw.refused) return { ...NOT_A_PLANT, failure: "refused" };
+  const parsed = IdentifyResult.safeParse(raw.output);
+  if (!parsed.success) {
+    console.error("identifyPlant: unusable model output", parsed.error?.message);
+    return { ...NOT_A_PLANT, failure: "error" };
+  }
+  return trimIdentify(parsed.data);
 }

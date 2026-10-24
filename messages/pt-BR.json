@@ -124,7 +124,10 @@
       "reset": "Redefinir senha",
       "resetDone": "Senha redefinida. A pessoa foi desconectada de todos os lugares.",
       "aiCap": "Limite mensal de IA",
-      "aiCapUsd": "Limite em USD por mês"
+      "aiCapUsd": "Limite em USD por mês",
+      "careProfiles": "Perfis de cuidado",
+      "careProfilesNone": "Nenhum perfil de cuidado com falha.",
+      "retry": "Tentar de novo"
     }
   },
   "calendar": {

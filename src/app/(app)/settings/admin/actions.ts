@@ -10,6 +10,7 @@ import {
   type HomeInput,
   type SpotInput,
 } from "@/lib/admin";
+import { retryCareProfile } from "@/lib/ai/care-profile";
 import { createInvite, resetPassword } from "@/lib/invites";
 import { requireAdmin } from "@/lib/session";
 
@@ -69,4 +70,12 @@ export async function resetPasswordAction(
 ): Promise<ActionResult> {
   const admin = await requireAdmin();
   return run(() => resetPassword(admin.id, userId, newPassword).then(() => ({})));
+}
+
+export async function retryCareProfileAction(speciesId: string): Promise<ActionResult> {
+  await requireAdmin();
+  return run(async () => {
+    if ((await retryCareProfile(speciesId)) !== "ready") throw new Error("Care profile failed");
+    return {};
+  });
 }

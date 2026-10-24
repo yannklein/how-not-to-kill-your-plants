@@ -1,7 +1,7 @@
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getTranslations } from "next-intl/server";
 import { db } from "@/db/client";
-import { group, groupMember, home, spot, user } from "@/db/schema";
+import { group, groupMember, home, spot, species, user } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,6 +10,7 @@ import {
   HomeForm,
   InviteSection,
   ResetPasswordForm,
+  RetryCareProfile,
   SpotForm,
 } from "./admin-forms";
 
@@ -24,6 +25,11 @@ export default async function AdminPage() {
     .orderBy(asc(user.name));
   const groups = await db.select().from(group).orderBy(asc(group.createdAt));
   const members = await db.select().from(groupMember);
+  const failedSpecies = await db
+    .select({ id: species.id, name: species.scientificName })
+    .from(species)
+    .where(eq(species.careProfileStatus, "failed"))
+    .orderBy(asc(species.scientificName));
   const spots = await db.select().from(spot).orderBy(asc(spot.name));
 
   return (
@@ -82,6 +88,14 @@ export default async function AdminPage() {
 
       <Section title={t("aiCap")}>
         <AiCapForm initial={Number(homeRow?.aiMonthlyCapUsd ?? 20)} />
+      </Section>
+
+      <Section title={t("careProfiles")}>
+        {failedSpecies.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("careProfilesNone")}</p>
+        ) : (
+          failedSpecies.map((sp) => <RetryCareProfile key={sp.id} speciesId={sp.id} name={sp.name} />)
+        )}
       </Section>
     </main>
   );

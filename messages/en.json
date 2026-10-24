@@ -124,7 +124,10 @@
       "reset": "Reset password",
       "resetDone": "Password reset. They were signed out everywhere.",
       "aiCap": "AI monthly cap",
-      "aiCapUsd": "Cap in USD per month"
+      "aiCapUsd": "Cap in USD per month",
+      "careProfiles": "Care profiles",
+      "careProfilesNone": "No failed care profiles.",
+      "retry": "Retry"
     }
   },
   "calendar": {

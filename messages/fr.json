@@ -124,7 +124,10 @@
       "reset": "Réinitialiser le mot de passe",
       "resetDone": "Mot de passe réinitialisé. La personne a été déconnectée partout.",
       "aiCap": "Plafond mensuel IA",
-      "aiCapUsd": "Plafond en USD par mois"
+      "aiCapUsd": "Plafond en USD par mois",
+      "careProfiles": "Profils d'entretien",
+      "careProfilesNone": "Aucun profil d'entretien en échec.",
+      "retry": "Réessayer"
     }
   },
   "calendar": {
