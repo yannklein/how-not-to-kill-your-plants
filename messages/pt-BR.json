@@ -52,7 +52,8 @@
     "needsAttention": "Precisa de atenção",
     "addPlant": "Adicionar planta",
     "myPlants": "Minhas plantas",
-    "aiBanner": "Gasto com IA em {pct}% de US$ {cap} neste mês"
+    "aiBanner": "Gasto com IA em {pct}% de US$ {cap} neste mês",
+    "gardener": "🩺 Jardineiro"
   },
   "plants": {
     "title": "Plantas",
@@ -289,6 +290,24 @@
     "title": "Jardineiro",
     "fallback": "Desculpe, não consegui responder agora. Tente de novo daqui a pouco.",
     "confirmWater": "Feito ✓ Vou lembrar de regar a cada {days} dias, a partir da próxima rega.",
-    "confirmSpot": "Feito ✓ Agora ela fica em: {spot}."
+    "confirmSpot": "Feito ✓ Agora ela fica em: {spot}.",
+    "askAbout": "Perguntar ao jardineiro",
+    "placeholder": "Pergunte sobre suas plantas…",
+    "send": "Enviar",
+    "thinking": "O jardineiro está pensando…",
+    "paused": "O jardineiro volta no mês que vem.",
+    "done": "Feito",
+    "notNow": "Agora não",
+    "waterEvery": "{days, plural, one {💧 Regar todo dia} other {💧 Regar a cada # dias}}",
+    "moveTo": "📍 Mudar para {spot}",
+    "applied": "Feito ✓",
+    "gone": "Esse lugar não existe mais.",
+    "same": "Já está assim.",
+    "already": "Já feito.",
+    "general": "Geral",
+    "attachPhoto": "Adicionar foto",
+    "photoAttached": "Foto anexada",
+    "conversations": "Conversas",
+    "empty": "Pergunte o que quiser sobre suas plantas: folhas amarelas, onde colocar, quando regar…"
   }
 }

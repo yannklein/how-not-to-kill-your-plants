@@ -52,7 +52,8 @@
     "needsAttention": "Needs attention",
     "addPlant": "Add plant",
     "myPlants": "My plants",
-    "aiBanner": "AI spend at {pct}% of ${cap} this month"
+    "aiBanner": "AI spend at {pct}% of ${cap} this month",
+    "gardener": "🩺 Gardener"
   },
   "plants": {
     "title": "Plants",
@@ -289,6 +290,24 @@
     "title": "Gardener",
     "fallback": "Sorry, I couldn't answer that right now. Try again in a moment.",
     "confirmWater": "Done ✓ I'll remind you to water every {days} days, starting from the next watering.",
-    "confirmSpot": "Done ✓ It now lives in {spot}."
+    "confirmSpot": "Done ✓ It now lives in {spot}.",
+    "askAbout": "Ask the gardener",
+    "placeholder": "Ask about your plants…",
+    "send": "Send",
+    "thinking": "The gardener is thinking…",
+    "paused": "The gardener is back next month.",
+    "done": "Done",
+    "notNow": "Not now",
+    "waterEvery": "{days, plural, one {💧 Water every day} other {💧 Water every # days}}",
+    "moveTo": "📍 Move to {spot}",
+    "applied": "Done ✓",
+    "gone": "That spot no longer exists.",
+    "same": "Already set.",
+    "already": "Already done.",
+    "general": "General",
+    "attachPhoto": "Add a photo",
+    "photoAttached": "Photo attached",
+    "conversations": "Conversations",
+    "empty": "Ask anything about your plants: yellow leaves, where to put them, when to water…"
   }
 }

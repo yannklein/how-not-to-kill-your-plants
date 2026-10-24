@@ -52,7 +52,8 @@
     "needsAttention": "À faire",
     "addPlant": "Ajouter une plante",
     "myPlants": "Mes plantes",
-    "aiBanner": "Dépenses IA à {pct} % de {cap} $ ce mois-ci"
+    "aiBanner": "Dépenses IA à {pct} % de {cap} $ ce mois-ci",
+    "gardener": "🩺 Jardinier"
   },
   "plants": {
     "title": "Plantes",
@@ -289,6 +290,24 @@
     "title": "Jardinier",
     "fallback": "Désolé, je n'ai pas pu répondre pour l'instant. Réessayez dans un moment.",
     "confirmWater": "C'est fait ✓ Je vous rappellerai d'arroser tous les {days} jours, à partir du prochain arrosage.",
-    "confirmSpot": "C'est fait ✓ Elle est maintenant à : {spot}."
+    "confirmSpot": "C'est fait ✓ Elle est maintenant à : {spot}.",
+    "askAbout": "Demander au jardinier",
+    "placeholder": "Posez une question sur vos plantes…",
+    "send": "Envoyer",
+    "thinking": "Le jardinier réfléchit…",
+    "paused": "Le jardinier revient le mois prochain.",
+    "done": "Fait",
+    "notNow": "Plus tard",
+    "waterEvery": "{days, plural, one {💧 Arroser tous les jours} other {💧 Arroser tous les # jours}}",
+    "moveTo": "📍 Déplacer vers {spot}",
+    "applied": "C'est fait ✓",
+    "gone": "Cet endroit n'existe plus.",
+    "same": "Déjà en place.",
+    "already": "Déjà fait.",
+    "general": "Général",
+    "attachPhoto": "Ajouter une photo",
+    "photoAttached": "Photo jointe",
+    "conversations": "Conversations",
+    "empty": "Posez n'importe quelle question : feuilles jaunes, où les placer, quand arroser…"
   }
 }

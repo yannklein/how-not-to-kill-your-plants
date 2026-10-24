@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { gardenerAlert, group, groupMember, home, plant, user } from "@/db/schema";
-import { createAlert, openAlertsForUser, resolveAlert } from "@/lib/gardener/alerts";
+import { applyAlertSuggestion, createAlert, openAlertsForUser, resolveAlert } from "@/lib/gardener/alerts";
 import { db, resetDb } from "./setup";
 
 const NOT_FOUND = { digest: "NEXT_HTTP_ERROR_FALLBACK;404" };
@@ -72,5 +72,12 @@ describe("gardener alerts", () => {
     await alert();
     const [fr] = await openAlertsForUser(Y, "fr");
     expect(fr).toMatchObject({ plantName: "Ficus", text: "Trop sombre ici", category: "light" });
+  });
+
+  it("applies a warning's suggested change for anyone in the group", async () => {
+    const id = (await createAlert({ plantId, source: "pattern", category: "overwatering", texts, suggestion: { kind: "water", days: 12 } }))!;
+    expect(await applyAlertSuggestion(A, id)).toBe("applied");
+    expect((await db.select().from(plant).where(eq(plant.id, plantId)))[0].waterIntervalOverrideDays).toBe(12);
+    await expect(applyAlertSuggestion(M, id)).rejects.toMatchObject(NOT_FOUND);
   });
 });

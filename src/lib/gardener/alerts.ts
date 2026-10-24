@@ -5,6 +5,7 @@ import { gardenerAlert, plant } from "@/db/schema";
 import type { Locale } from "@/i18n/locales";
 import { getPlantForUser, visibleGroupIds } from "@/lib/access";
 import { coverUrls } from "@/lib/tasks/queries";
+import { applySuggestion } from "./suggestions";
 import type { AlertCategory, Suggestion } from "./types";
 
 export const SUPPRESS_DAYS = 14;
@@ -108,4 +109,15 @@ export async function openAlertsForUser(userId: string, locale: Locale): Promise
     suggestion: (alert.suggestion as Suggestion | null) ?? null,
     createdAt: alert.createdAt,
   }));
+}
+
+/** The warning's suggested change, applied after a tap by anyone in the plant's group. */
+export async function applyAlertSuggestion(userId: string, alertId: string): Promise<"applied" | "gone" | "same"> {
+  if (!UUID.test(alertId)) notFound();
+  const [row] = await db
+    .select({ plantId: gardenerAlert.plantId, suggestion: gardenerAlert.suggestion })
+    .from(gardenerAlert)
+    .where(eq(gardenerAlert.id, alertId));
+  if (!row?.suggestion) notFound();
+  return applySuggestion(userId, row.plantId, row.suggestion as Suggestion);
 }

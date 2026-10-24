@@ -4,9 +4,11 @@ import { db } from "@/db/client";
 import { home } from "@/db/schema";
 import { monthSpend } from "@/lib/ai/budget";
 import { currentMoods, feedForUser } from "@/lib/feed/queries";
+import { openAlertsForUser } from "@/lib/gardener/alerts";
 import { requireUser } from "@/lib/session";
 import { dueTasksForUser } from "@/lib/tasks/queries";
 import { todayIn } from "@/lib/time";
+import { AlertCard } from "@/components/alert-card";
 import { FeedPost } from "@/components/feed-post";
 import { TaskCard } from "@/components/task-card";
 import { buttonVariants } from "@/components/ui/button";
@@ -21,9 +23,10 @@ export default async function HomePage() {
   ]);
   const [homeRow] = await db.select().from(home).limit(1);
   const today = todayIn(homeRow?.timezone ?? "Europe/Madrid");
-  const [groups, news, spend] = await Promise.all([
+  const [groups, news, alerts, spend] = await Promise.all([
     dueTasksForUser(user.id, today),
     feedForUser(user.id, user.locale, { mode: "highlights" }),
+    openAlertsForUser(user.id, user.locale),
     user.role === "admin" ? monthSpend() : Promise.resolve(null),
   ]);
   const moods = await currentMoods(
@@ -36,7 +39,15 @@ export default async function HomePage() {
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <h1 className="text-xl font-semibold">{t("needsAttention")}</h1>
 
-      {groups.length === 0 ? (
+      {alerts.length > 0 ? (
+        <ul className="flex flex-col gap-3">
+          {alerts.map((a) => (
+            <AlertCard key={a.id} alert={a} />
+          ))}
+        </ul>
+      ) : null}
+
+      {groups.length === 0 && alerts.length === 0 ? (
         <p className="rounded-xl bg-muted p-4 text-center text-muted-foreground">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -87,6 +98,9 @@ export default async function HomePage() {
         </Link>
         <Link href="/plants" className={cn(buttonVariants({ variant: "outline" }), "h-11 flex-1 text-base")}>
           {t("myPlants")}
+        </Link>
+        <Link href="/gardener" className={cn(buttonVariants({ variant: "outline" }), "h-11 flex-1 text-base")}>
+          {t("gardener")}
         </Link>
       </div>
 

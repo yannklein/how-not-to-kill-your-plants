@@ -29,12 +29,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function PlantPage({ params }: { params: Promise<{ id: string }> }) {
-  const [user, { id }, t, tc, tf, format] = await Promise.all([
+  const [user, { id }, t, tc, tf, tg, format] = await Promise.all([
     requireUser(),
     params,
     getTranslations("plants"),
     getTranslations("care"),
     getTranslations("feed"),
+    getTranslations("gardener"),
     getFormatter(),
   ]);
   const plant = await getPlantForUser(user.id, id);
@@ -82,6 +83,12 @@ export default async function PlantPage({ params }: { params: Promise<{ id: stri
 
       <div className="flex gap-2">
         <PhotoCapture plantId={plant.id} label={t("addPhoto")} variant="outline" />
+        <Link
+          href={`/gardener?plant=${plant.id}`}
+          className={cn(buttonVariants({ variant: "outline" }), "h-11 flex-1 text-base")}
+        >
+          {tg("askAbout")}
+        </Link>
       </div>
       <PlantMoments
         plantId={plant.id}
