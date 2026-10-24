@@ -27,8 +27,8 @@ export const E2E_ENV = {
   S3_BUCKET: "plants",
   S3_ACCESS_KEY: "minio",
   S3_SECRET_KEY: "minio-secret",
-  VAPID_PUBLIC_KEY: "e2e",
-  VAPID_PRIVATE_KEY: "e2e",
+  VAPID_PUBLIC_KEY: "BHaR0MpyuOp_kRK24mT_Xcqwn40gvbrD7XPV1iNzoqrGz1xzfDXv08UvpFIG4j6D0T9u8RvS-Ux4puUTbkePQxc",
+  VAPID_PRIVATE_KEY: "BYo3G-ulOd0TWrQ4JXQjLpicGkx-90IjDCk1HREoErE",
   VAPID_SUBJECT: "mailto:e2e@example.com",
   CRON_SECRET: "e2e",
 } as const;

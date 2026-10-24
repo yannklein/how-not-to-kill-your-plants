@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -17,7 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "How Not To Kill Your Plants",
   description: "Plant care reminders for the household.",
+  appleWebApp: { capable: true, title: "Plants", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
+
+export const viewport: Viewport = { themeColor: "#2f7d4f" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();

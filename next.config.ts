@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+// @serwist/next needs webpack, so `build` runs `next build --webpack`. The SW is
+// off in dev, where Turbopack is used.
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development",
+  additionalPrecacheEntries: [{ url: "/offline", revision: process.env.npm_package_version ?? "1" }],
+});
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -19,4 +29,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withSerwist(withNextIntl(nextConfig));

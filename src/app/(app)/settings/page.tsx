@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { PushToggle } from "@/components/push-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calendarUrl, getOrCreateCalendarToken } from "@/lib/calendar/tokens";
 import { env } from "@/lib/env";
@@ -30,7 +31,7 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <PushTimeForm initial={me.pushTime} />
-          {/* Push enable toggle: Task 13 */}
+          <PushToggle vapidPublicKey={env.VAPID_PUBLIC_KEY} />
         </CardContent>
       </Card>
 

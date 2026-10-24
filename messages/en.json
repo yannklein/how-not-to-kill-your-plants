@@ -13,6 +13,10 @@
       "add": "Add a plant",
       "settings": "Settings",
       "label": "Main navigation"
+    },
+    "offline": {
+      "title": "You're offline",
+      "body": "Reconnect to see your plants and tasks."
     }
   },
   "auth": {
@@ -204,8 +208,14 @@
     "enable": "Turn on reminders",
     "disable": "Turn off reminders",
     "denied": "Notifications are blocked in your browser settings.",
-    "digestTitle": "Plants need you today",
-    "digestBody": "{count, plural, one {# task is due} other {# tasks are due}}."
+    "unsupported": "This browser can't receive notifications.",
+    "failed": "Couldn't change reminders. Try again.",
+    "digestTitle": "{count, plural, one {🌿 # plant needs you today} other {🌿 # plants need you today}}",
+    "digestBody": "{names}",
+    "digestOverdue": "{count, plural, one {# task overdue} other {# tasks overdue}}",
+    "installTitle": "Install this app",
+    "installBody": "On iPhone, tap Share, then Add to Home Screen. Notifications only work once the app is installed.",
+    "dismiss": "Dismiss"
   },
   "care": {
     "type": {

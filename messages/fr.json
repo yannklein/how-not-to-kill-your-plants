@@ -13,6 +13,10 @@
       "add": "Ajouter une plante",
       "settings": "Réglages",
       "label": "Navigation principale"
+    },
+    "offline": {
+      "title": "Vous êtes hors ligne",
+      "body": "Reconnectez-vous pour voir vos plantes et vos tâches."
     }
   },
   "auth": {
@@ -204,8 +208,14 @@
     "enable": "Activer les rappels",
     "disable": "Désactiver les rappels",
     "denied": "Les notifications sont bloquées dans les réglages de votre navigateur.",
-    "digestTitle": "Vos plantes ont besoin de vous aujourd'hui",
-    "digestBody": "{count, plural, one {# tâche à faire} other {# tâches à faire}}."
+    "unsupported": "Ce navigateur ne peut pas recevoir de notifications.",
+    "failed": "Impossible de modifier les rappels. Réessayez.",
+    "digestTitle": "{count, plural, one {🌿 # plante a besoin de vous aujourd'hui} other {🌿 # plantes ont besoin de vous aujourd'hui}}",
+    "digestBody": "{names}",
+    "digestOverdue": "{count, plural, one {# tâche en retard} other {# tâches en retard}}",
+    "installTitle": "Installer l'application",
+    "installBody": "Sur iPhone, touchez Partager, puis Sur l'écran d'accueil. Les notifications ne fonctionnent qu'une fois l'application installée.",
+    "dismiss": "Fermer"
   },
   "care": {
     "type": {

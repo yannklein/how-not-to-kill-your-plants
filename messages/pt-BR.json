@@ -13,6 +13,10 @@
       "add": "Adicionar planta",
       "settings": "Ajustes",
       "label": "Navegação principal"
+    },
+    "offline": {
+      "title": "Você está offline",
+      "body": "Reconecte-se para ver suas plantas e tarefas."
     }
   },
   "auth": {
@@ -204,8 +208,14 @@
     "enable": "Ativar lembretes",
     "disable": "Desativar lembretes",
     "denied": "As notificações estão bloqueadas nas configurações do navegador.",
-    "digestTitle": "Suas plantas precisam de você hoje",
-    "digestBody": "{count, plural, one {# tarefa para fazer} other {# tarefas para fazer}}."
+    "unsupported": "Este navegador não pode receber notificações.",
+    "failed": "Não foi possível alterar os lembretes. Tente de novo.",
+    "digestTitle": "{count, plural, one {🌿 # planta precisa de você hoje} other {🌿 # plantas precisam de você hoje}}",
+    "digestBody": "{names}",
+    "digestOverdue": "{count, plural, one {# tarefa atrasada} other {# tarefas atrasadas}}",
+    "installTitle": "Instalar o app",
+    "installBody": "No iPhone, toque em Compartilhar e depois em Adicionar à Tela de Início. As notificações só funcionam com o app instalado.",
+    "dismiss": "Dispensar"
   },
   "care": {
     "type": {

@@ -45,3 +45,8 @@ next-env.d.ts
 .superpowers/
 /test-results/
 /playwright-report/
+
+# Serwist-generated service worker
+/public/sw.js
+/public/sw.js.map
+/public/swe-worker-*.js
