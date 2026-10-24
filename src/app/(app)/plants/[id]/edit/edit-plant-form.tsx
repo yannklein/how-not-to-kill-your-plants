@@ -28,6 +28,8 @@ export function EditPlantForm({
     status: "alive" | "dead" | "given_away";
     waterIntervalOverrideDays: string;
     potSizeCm: string;
+    personaSummary: string;
+    personaTraits: string;
   };
 }) {
   const t = useTranslations("plants");
@@ -96,6 +98,26 @@ export function EditPlantForm({
           min={1}
           max={1000}
           defaultValue={initial.potSizeCm}
+          className="h-11 text-base"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="personaSummary">{t("personality")}</Label>
+        <textarea
+          id="personaSummary"
+          name="personaSummary"
+          maxLength={300}
+          rows={3}
+          defaultValue={initial.personaSummary}
+          className="rounded-md border bg-transparent px-3 py-2 text-base"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="personaTraits">{t("traits")}</Label>
+        <Input
+          id="personaTraits"
+          name="personaTraits"
+          defaultValue={initial.personaTraits}
           className="h-11 text-base"
         />
       </div>

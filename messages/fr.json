@@ -87,7 +87,17 @@
     "waterOverridePlaceholder": "Automatique",
     "save": "Enregistrer",
     "saving": "Enregistrement…",
-    "saveError": "Enregistrement impossible. Vérifiez les valeurs."
+    "saveError": "Enregistrement impossible. Vérifiez les valeurs.",
+    "somethingNew": "Du nouveau ? 🌱",
+    "deleteMoment": "Supprimer",
+    "addPhoto": "Ajouter une photo",
+    "photos": "Photos",
+    "compare": "Comparer",
+    "timeline": "Chronologie",
+    "first": "Première",
+    "latest": "Dernière",
+    "personality": "Personnalité",
+    "traits": "Traits (séparés par des virgules)"
   },
   "addPlant": {
     "title": "Ajouter une plante",

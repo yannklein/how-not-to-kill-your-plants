@@ -20,6 +20,14 @@ export const UpdatePlantInput = z.object({
   status: z.enum(["alive", "dead", "given_away"]),
   waterIntervalOverrideDays: optionalPositiveInt,
   potSizeCm: optionalPositiveInt,
+  /** Omitted = unchanged. */
+  persona: z
+    .object({
+      summary: z.string().trim().min(1).max(300),
+      traits: z.array(z.string().trim().min(1).max(40)).max(5),
+    })
+    .nullable()
+    .optional(),
 });
 export type UpdatePlantInput = z.infer<typeof UpdatePlantInput>;
 

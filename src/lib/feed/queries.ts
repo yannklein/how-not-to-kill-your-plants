@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lt, max } from "drizzle-orm";
 import { db } from "@/db/client";
-import { careTask, feedEvent, feedText, home, moment, photo, plant } from "@/db/schema";
+import { careTask, feedEvent, feedText, home, moment, photo, plant, user } from "@/db/schema";
 import type { Locale } from "@/i18n/locales";
 import { visibleGroupIds } from "@/lib/access";
 import { seasonOf } from "@/lib/care/season";
@@ -10,7 +10,7 @@ import { todayIn } from "@/lib/time";
 import { pickHighlights } from "./highlights";
 import { moodOf } from "./mood";
 import { renderPostText } from "./text";
-import type { Mood, PostPayload, PostType } from "./types";
+import type { MomentType, Mood, PostPayload, PostType } from "./types";
 
 export type FeedPost = {
   id: string;
@@ -138,4 +138,18 @@ export async function currentMoods(plantIds: string[], today?: string): Promise<
     );
   }
   return out;
+}
+
+export type MomentItem = { id: string; type: MomentType; userId: string; userName: string; createdAt: Date };
+
+/** A plant's latest growth moments with who logged them. Callers have already checked access. */
+export async function recentMoments(plantId: string, limit = 10): Promise<MomentItem[]> {
+  const rows = await db
+    .select({ id: moment.id, type: moment.type, userId: moment.userId, userName: user.name, createdAt: moment.createdAt })
+    .from(moment)
+    .innerJoin(user, eq(user.id, moment.userId))
+    .where(eq(moment.plantId, plantId))
+    .orderBy(desc(moment.createdAt))
+    .limit(limit);
+  return rows.map((r) => ({ ...r, type: r.type as MomentType }));
 }

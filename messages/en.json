@@ -87,7 +87,17 @@
     "waterOverridePlaceholder": "Automatic",
     "save": "Save",
     "saving": "Saving…",
-    "saveError": "Could not save. Check the values."
+    "saveError": "Could not save. Check the values.",
+    "somethingNew": "Something new? 🌱",
+    "deleteMoment": "Delete",
+    "addPhoto": "Add photo",
+    "photos": "Photos",
+    "compare": "Compare",
+    "timeline": "Timeline",
+    "first": "First",
+    "latest": "Latest",
+    "personality": "Personality",
+    "traits": "Traits (comma-separated)"
   },
   "addPlant": {
     "title": "Add a plant",

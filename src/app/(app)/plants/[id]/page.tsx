@@ -6,10 +6,16 @@ import { home, species } from "@/db/schema";
 import { getPlantForUser } from "@/lib/access";
 import { CareProfile } from "@/lib/ai/schemas";
 import { isGrowing, seasonOf } from "@/lib/care/season";
+import { currentMoods, recentMoments } from "@/lib/feed/queries";
 import { speciesLabel } from "@/lib/plants/display";
+import { plantTimeline } from "@/lib/plants/photos";
 import { requireUser } from "@/lib/session";
 import { coverUrls, upcomingTasksForPlant } from "@/lib/tasks/queries";
 import { todayIn } from "@/lib/time";
+import { PhotoCapture } from "@/components/photo-capture";
+import { PhotoTimeline } from "@/components/photo-timeline";
+import { PlantAvatar } from "@/components/plant-avatar";
+import { PlantMoments } from "@/components/plant-moments";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -23,20 +29,26 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function PlantPage({ params }: { params: Promise<{ id: string }> }) {
-  const [user, { id }, t, tc, format] = await Promise.all([
+  const [user, { id }, t, tc, tf, format] = await Promise.all([
     requireUser(),
     params,
     getTranslations("plants"),
     getTranslations("care"),
+    getTranslations("feed"),
     getFormatter(),
   ]);
   const plant = await getPlantForUser(user.id, id);
-  const [[homeRow], [sp], upcoming, covers] = await Promise.all([
+  const [[homeRow], [sp], upcoming, covers, moods, moments, timeline] = await Promise.all([
     db.select().from(home).limit(1),
     plant.speciesId ? db.select().from(species).where(eq(species.id, plant.speciesId)) : [],
     upcomingTasksForPlant(plant.id),
     coverUrls([plant]),
+    currentMoods([plant.id]),
+    recentMoments(plant.id),
+    plantTimeline(plant.id),
   ]);
+  const mood = moods.get(plant.id) ?? "happy";
+  const now = new Date();
   const cover = covers.get(plant.id);
   const today = todayIn(homeRow?.timezone ?? "Europe/Madrid");
   const growing = isGrowing(seasonOf(today, homeRow?.hemisphere ?? "N"));
@@ -49,17 +61,14 @@ export default async function PlantPage({ params }: { params: Promise<{ id: stri
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted">
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover} alt={plant.name} className="size-full object-cover" />
-        ) : null}
-      </div>
-
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold">{plant.name}</h1>
-          {sp ? <p className="text-sm text-muted-foreground">{speciesLabel(sp, user.locale)}</p> : null}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-4">
+          <PlantAvatar coverUrl={cover ?? null} mood={mood} moodLabel={tf(`mood.${mood}`)} size="lg" />
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold">{plant.name}</h1>
+            {sp ? <p className="text-sm text-muted-foreground">{speciesLabel(sp, user.locale)}</p> : null}
+            <p className="text-sm">{tf(`mood.${mood}`)}</p>
+          </div>
         </div>
         <Link
           href={`/plants/${plant.id}/edit`}
@@ -68,6 +77,25 @@ export default async function PlantPage({ params }: { params: Promise<{ id: stri
           {t("edit")}
         </Link>
       </div>
+
+      {plant.persona?.summary ? <p className="text-sm italic text-muted-foreground">{plant.persona.summary}</p> : null}
+
+      <div className="flex gap-2">
+        <PhotoCapture plantId={plant.id} label={t("addPhoto")} variant="outline" />
+      </div>
+      <PlantMoments
+        plantId={plant.id}
+        moments={moments.map((m) => ({
+          id: m.id,
+          type: m.type,
+          userName: m.userName,
+          mine: m.userId === user.id,
+          when: format.relativeTime(m.createdAt, now),
+        }))}
+      />
+      <PhotoTimeline
+        photos={timeline.map((p) => ({ id: p.id, url: p.url, label: format.dateTime(p.takenAt, { dateStyle: "medium", timeZone: homeRow?.timezone ?? "Europe/Madrid" }) }))}
+      />
 
       {sp?.careProfileStatus === "pending" ? (
         <p className="w-fit rounded-full bg-muted px-3 py-1 text-xs font-medium">{t("profilePending")}</p>

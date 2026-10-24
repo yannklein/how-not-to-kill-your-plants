@@ -32,6 +32,8 @@ export default async function EditPlantPage({ params }: { params: Promise<{ id: 
           status: plant.status,
           waterIntervalOverrideDays: plant.waterIntervalOverrideDays?.toString() ?? "",
           potSizeCm: plant.potSizeCm?.toString() ?? "",
+          personaSummary: plant.persona?.summary ?? "",
+          personaTraits: plant.persona?.traits.join(", ") ?? "",
         }}
       />
     </main>

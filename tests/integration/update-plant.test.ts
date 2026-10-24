@@ -48,4 +48,16 @@ describe("updatePlant", () => {
   it("is not found for non-members", async () => {
     await expect(updatePlant("nobody", mine, base)).rejects.toMatchObject({ digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
   });
+
+  it("saves an edited personality and rejects one that is too long", async () => {
+    const persona = { summary: "Dramatic diva", traits: ["proud", "thirsty"] };
+    const updated = await updatePlant("u-y", mine, { ...base, persona });
+    expect(updated.persona).toEqual(persona);
+    await expect(
+      updatePlant("u-y", mine, { ...base, persona: { summary: "x".repeat(301), traits: [] } }),
+    ).rejects.toBeInstanceOf(PlantInputError);
+    await expect(
+      updatePlant("u-y", mine, { ...base, persona: { summary: "ok", traits: ["a", "b", "c", "d", "e", "f"] } }),
+    ).rejects.toBeInstanceOf(PlantInputError);
+  });
 });

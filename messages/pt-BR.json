@@ -87,7 +87,17 @@
     "waterOverridePlaceholder": "Automático",
     "save": "Salvar",
     "saving": "Salvando…",
-    "saveError": "Não foi possível salvar. Verifique os valores."
+    "saveError": "Não foi possível salvar. Verifique os valores.",
+    "somethingNew": "Alguma novidade? 🌱",
+    "deleteMoment": "Excluir",
+    "addPhoto": "Adicionar foto",
+    "photos": "Fotos",
+    "compare": "Comparar",
+    "timeline": "Linha do tempo",
+    "first": "Primeira",
+    "latest": "Última",
+    "personality": "Personalidade",
+    "traits": "Traços (separados por vírgula)"
   },
   "addPlant": {
     "title": "Adicionar planta",

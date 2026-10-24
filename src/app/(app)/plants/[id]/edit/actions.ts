@@ -7,6 +7,17 @@ import { requireUser } from "@/lib/session";
 
 export type EditState = { error: boolean };
 
+/** Empty summary clears the personality; traits are comma-separated. */
+function personaFrom(form: FormData) {
+  const summary = String(form.get("personaSummary") ?? "").trim();
+  if (!summary) return null;
+  const traits = String(form.get("personaTraits") ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  return { summary, traits };
+}
+
 function intOrNull(v: FormDataEntryValue | null): number | null {
   const s = typeof v === "string" ? v.trim() : "";
   return s === "" ? null : Number(s);
@@ -27,6 +38,7 @@ export async function updatePlantAction(
       status: String(form.get("status") ?? ""),
       waterIntervalOverrideDays: intOrNull(form.get("waterIntervalOverrideDays")),
       potSizeCm: intOrNull(form.get("potSizeCm")),
+      persona: personaFrom(form),
     });
   } catch (error) {
     if (error instanceof PlantInputError) return { error: true };
