@@ -115,6 +115,7 @@ export async function createPlantWithTasks(
           userId,
           objectKey,
           kind: objectKey === input.labelPhotoKey ? ("label" as const) : ("plant" as const),
+          checkedAt: new Date(), // identification already looked at these
           width: sizes[i].width,
           height: sizes[i].height,
         })),

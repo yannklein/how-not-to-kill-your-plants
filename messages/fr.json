@@ -284,5 +284,8 @@
       "sleepy": "Endormie",
       "happy": "Heureuse"
     }
+  },
+  "gardener": {
+    "title": "Jardinier"
   }
 }

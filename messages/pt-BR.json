@@ -284,5 +284,8 @@
       "sleepy": "Sonolenta",
       "happy": "Feliz"
     }
+  },
+  "gardener": {
+    "title": "Jardineiro"
   }
 }

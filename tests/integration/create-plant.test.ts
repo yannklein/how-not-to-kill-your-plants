@@ -124,4 +124,10 @@ describe("createPlantWithTasks (AI_MODE=mock)", () => {
     expect(events.map((e) => e.type)).toEqual(["first"]);
     expect(events[0].payload).toMatchObject({ userName: "Yann" });
   });
+
+  it("marks photos taken while adding a plant as already checked", async () => {
+    const { plantId } = await createPlantWithTasks(Y, input());
+    const photos = await db.select().from(photo).where(eq(photo.plantId, plantId));
+    for (const p of photos) expect(p.checkedAt).toBeInstanceOf(Date);
+  });
 });

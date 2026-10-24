@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db, resetDb } from "./setup";
-import { careTask, feedEvent, group, home, photo, plant, species, user } from "@/db/schema";
+import { careTask, feedEvent, gardenerAlert, group, home, photo, plant, species, user } from "@/db/schema";
 
 beforeEach(resetDb);
 
@@ -44,5 +44,20 @@ describe("schema", () => {
     expect(ph.kind).toBe("plant");
     const [ev] = await db.insert(feedEvent).values({ plantId: p.id, type: "first" }).returning();
     expect(ev.textAttempts).toBe(0);
+  });
+
+  it("opens new gardener alerts and leaves new photos unchecked", async () => {
+    const p = await seedPlant();
+    const [alert] = await db
+      .insert(gardenerAlert)
+      .values({ plantId: p.id, source: "photo", category: "light", texts: { en: "a", fr: "b", "pt-BR": "c" } })
+      .returning();
+    expect(alert.status).toBe("open");
+    await db.insert(user).values({ id: "u2", name: "Ana", email: "a@example.com" });
+    const [ph] = await db
+      .insert(photo)
+      .values({ plantId: p.id, userId: "u2", objectKey: "photos/y.jpg", width: 1, height: 1 })
+      .returning();
+    expect(ph.checkedAt).toBeNull();
   });
 });

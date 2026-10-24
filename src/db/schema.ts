@@ -37,6 +37,19 @@ export const taskOutcome = pgEnum("task_outcome", [
 ]);
 export const plantStatus = pgEnum("plant_status", ["alive", "dead", "given_away"]);
 export const photoKind = pgEnum("photo_kind", ["plant", "label"]);
+export const alertCategory = pgEnum("alert_category", [
+  "light",
+  "overwatering",
+  "underwatering",
+  "pests",
+  "nutrients",
+  "temperature",
+  "humidity",
+  "repot",
+  "other",
+]);
+export const alertStatus = pgEnum("alert_status", ["open", "done", "dismissed"]);
+export const alertSource = pgEnum("alert_source", ["photo", "pattern"]);
 export const lightLevel = pgEnum("light_level", [
   "low",
   "medium",
@@ -50,6 +63,7 @@ export const aiFeature = pgEnum("ai_feature", [
   "tips",
   "chat",
   "discover",
+  "health_check",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -244,6 +258,8 @@ export const plant = pgTable(
     waterIntervalOverrideDays: integer("water_interval_override_days"),
     coverPhotoId: uuid("cover_photo_id"), // no FK: photo -> plant is circular
     lastMood: text("last_mood"), // mood the feed last saw; null = no baseline yet
+    lastMoodAt: timestamp("last_mood_at"), // when lastMood last changed
+    lastPatternCheckOn: date("last_pattern_check_on"), // gardener's weekly pattern check
     createdAt: createdAt(),
   },
   (t) => [index("plant_group_id_idx").on(t.groupId)],
@@ -302,6 +318,7 @@ export const photo = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     objectKey: text("object_key").notNull(),
     kind: photoKind("kind").notNull().default("plant"),
+    checkedAt: timestamp("checked_at"), // gardener health check done (or not needed)
     width: integer("width").notNull(),
     height: integer("height").notNull(),
     takenAt: timestamp("taken_at").notNull().defaultNow(),
@@ -435,3 +452,22 @@ export const aiUsage = pgTable(
   (t) => [index("ai_usage_month_idx").on(t.month)],
 );
 
+export const gardenerAlert = pgTable(
+  "gardener_alert",
+  {
+    id: id(),
+    plantId: uuid("plant_id")
+      .notNull()
+      .references(() => plant.id, { onDelete: "cascade" }),
+    source: alertSource("source").notNull(),
+    category: alertCategory("category").notNull(),
+    texts: jsonb("texts").$type<{ en: string; fr: string; "pt-BR": string }>().notNull(),
+    suggestion: jsonb("suggestion").$type<Record<string, unknown> | null>(),
+    photoId: uuid("photo_id").references(() => photo.id, { onDelete: "set null" }),
+    status: alertStatus("status").notNull().default("open"),
+    resolvedBy: text("resolved_by").references(() => user.id, { onDelete: "set null" }),
+    resolvedAt: timestamp("resolved_at"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("gardener_alert_plant_status_idx").on(t.plantId, t.status)],
+);

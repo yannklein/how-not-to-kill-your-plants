@@ -284,5 +284,8 @@
       "sleepy": "Sleepy",
       "happy": "Happy"
     }
+  },
+  "gardener": {
+    "title": "Gardener"
   }
 }
