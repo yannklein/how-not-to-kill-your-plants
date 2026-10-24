@@ -229,7 +229,8 @@
     "dismiss": "Dispensar",
     "celebrationTitle": "🎉 Novidades das plantas",
     "birthdayLine": "🎂 Hoje é aniversário de {name}",
-    "firstFlowerLine": "🌸 {name} deu a primeira flor!"
+    "firstFlowerLine": "🌸 {name} deu a primeira flor!",
+    "birthdaysLine": "🎂 Aniversários hoje: {names}"
   },
   "care": {
     "type": {

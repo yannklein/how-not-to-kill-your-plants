@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { careTask, feedEvent, group, groupMember, home, photo, plant, user } from "@/db/schema";
 import { storeDraftPhoto } from "@/lib/photos";
+import { deleteMoment } from "@/lib/feed/events";
 import { addPlantPhoto, plantTimeline } from "@/lib/plants/photos";
 import { addMonths, todayIn } from "@/lib/time";
 import { db, resetDb } from "./setup";
@@ -93,5 +94,16 @@ describe("addPlantPhoto", () => {
     const timeline = await plantTimeline(plantId);
     expect(timeline.map((t) => t.id)).toEqual([second.photoId, first.photoId]);
     expect(timeline[0].url).toMatch(/^http/);
+  });
+
+  it("keeps the photo's post when its moment is undone", async () => {
+    const { photoId } = await addPlantPhoto(Y, plantId, await draft(), "flower");
+    const [ev] = await events("moment");
+    await deleteMoment(Y, (ev.payload as { momentId: string }).momentId);
+
+    expect(await events("moment")).toHaveLength(0);
+    const photos = await events("photo");
+    expect(photos).toHaveLength(1);
+    expect(photos[0].payload).toMatchObject({ photoId, userName: "Yann" });
   });
 });

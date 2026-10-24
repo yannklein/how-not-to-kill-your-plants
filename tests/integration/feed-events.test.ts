@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { careTask, feedEvent, group, groupMember, home, moment, plant, user } from "@/db/schema";
 import { deleteMoment, logMoment } from "@/lib/feed/events";
+import type { MomentType } from "@/lib/feed/types";
 import { completeTask } from "@/lib/tasks/complete";
 import { db, resetDb } from "./setup";
 
@@ -110,6 +111,12 @@ describe("feed events", () => {
 
   it("refuses moments on plants outside the user's groups", async () => {
     await expect(logMoment(M, plantId, "new_leaf", null)).rejects.toMatchObject(NOT_FOUND);
+    expect(await db.select().from(moment)).toHaveLength(0);
+    expect(await events()).toHaveLength(0);
+  });
+
+  it("rejects moment types the app doesn't know, writing nothing", async () => {
+    await expect(logMoment(Y, plantId, "banana" as MomentType, null)).rejects.toThrow();
     expect(await db.select().from(moment)).toHaveLength(0);
     expect(await events()).toHaveLength(0);
   });

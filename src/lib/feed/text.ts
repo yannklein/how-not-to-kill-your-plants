@@ -66,6 +66,9 @@ function callLive(input: FeedTextInput): Promise<StructuredOutput> {
     content: `Write the post for this event. Persona language (if you invent one): en.\n${JSON.stringify(input)}`,
     schema: FeedTexts,
     fallback: false,
+    // Optional text: give up quickly rather than hold the cron tick; the template shows meanwhile.
+    timeoutMs: 30_000,
+    maxRetries: 1,
   });
 }
 
@@ -146,10 +149,22 @@ export async function generateFeedTexts(eventId: string, deps: FeedTextDeps = {}
     .insert(feedText)
     .values((Object.keys(texts) as Locale[]).map((locale) => ({ eventId, locale, text: texts[locale] })))
     .onConflictDoNothing();
-  if (!row.plant.persona && parsed.data.persona?.summary) {
-    await db.update(plant).set({ persona: parsed.data.persona }).where(eq(plant.id, row.plant.id));
+  const persona = parsed.data.persona && fitPersona(parsed.data.persona);
+  if (!row.plant.persona && persona) {
+    await db.update(plant).set({ persona }).where(eq(plant.id, row.plant.id));
   }
   return "stored";
+}
+
+/** Trims an AI personality to the edit page's limits, so it never blocks saving a plant. */
+function fitPersona(p: Persona): Persona | null {
+  const summary = p.summary.trim().slice(0, 300).trim();
+  if (!summary) return null;
+  const traits = p.traits
+    .map((x) => x.replaceAll(",", " ").replace(/\s+/g, " ").trim().slice(0, 40).trim())
+    .filter(Boolean)
+    .slice(0, 5);
+  return { summary, traits };
 }
 
 /** The plant-voice text when it exists, otherwise a plain template in the reader's language. */

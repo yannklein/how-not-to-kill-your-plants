@@ -59,7 +59,8 @@ export async function tasksForUserUntil(
 
 /**
  * Active tasks due on or before `today` for alive plants in the user's groups,
- * grouped by plant. Groups with the most overdue task come first, then by name.
+ * grouped by plant. Groups with the most overdue care task come first (portraits
+ * don't count), then by name.
  */
 export async function dueTasksForUser(userId: string, today: string): Promise<DueGroup[]> {
   const rows = await activeTasksUntil(userId, today);
@@ -74,7 +75,9 @@ export async function dueTasksForUser(userId: string, today: string): Promise<Du
   const urls = await coverUrls(groups.map((g) => g.plant));
   for (const g of groups) g.plant.coverUrl = urls.get(g.plant.id) ?? null;
 
-  const worst = (g: DueGroup) => Math.max(...g.tasks.map((t) => t.overdueDays));
+  // A portrait reminder is never more urgent than care: photo-only plants sort last.
+  const worst = (g: DueGroup) =>
+    Math.max(-1, ...g.tasks.filter((t) => t.type !== "photo").map((t) => t.overdueDays));
   return groups.sort((a, b) => worst(b) - worst(a) || a.plant.name.localeCompare(b.plant.name));
 }
 

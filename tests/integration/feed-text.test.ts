@@ -79,4 +79,21 @@ describe("generateFeedTexts", () => {
     const [p] = await db.select().from(plant).where(eq(plant.id, plantId));
     expect(p.persona).toEqual(persona);
   });
+
+  it("fits an AI personality to what the edit page accepts", async () => {
+    await db.update(plant).set({ persona: null }).where(eq(plant.id, plantId));
+    const persona = {
+      summary: "s".repeat(400),
+      traits: ["proud, loud", "  ", "a".repeat(60), "b", "c", "d", "e", "f"],
+    };
+    await generateFeedTexts(eventId, { call: async () => reply({ ...texts, persona }) });
+    const [p] = await db.select().from(plant).where(eq(plant.id, plantId));
+    expect(p.persona!.summary.length).toBeLessThanOrEqual(300);
+    expect(p.persona!.traits.length).toBeLessThanOrEqual(5);
+    for (const t of p.persona!.traits) {
+      expect(t.length).toBeGreaterThan(0);
+      expect(t.length).toBeLessThanOrEqual(40);
+      expect(t).not.toContain(",");
+    }
+  });
 });

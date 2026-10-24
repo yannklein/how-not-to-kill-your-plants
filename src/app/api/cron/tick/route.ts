@@ -35,8 +35,9 @@ export async function POST(req: Request) {
   const birthdays = await step("birthdays", () => runBirthdays(today));
   const moodPosts = await step("moods", () => runMoodChanges(today));
   const seasonPosts = await step("seasons", () => runSeasonChanges(today));
-  const textsWritten = await step("feed texts", () => runFeedTextFill());
   const digestsSent = await step("digests", async () => (await runDigests(now)).sent);
+  // Optional AI text last, so a slow model never delays the morning push.
+  const textsWritten = await step("feed texts", () => runFeedTextFill());
   return Response.json({ profilesReady, photoTasks, birthdays, moodPosts, seasonPosts, textsWritten, digestsSent });
 }
 

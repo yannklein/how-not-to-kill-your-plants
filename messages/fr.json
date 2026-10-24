@@ -229,7 +229,8 @@
     "dismiss": "Fermer",
     "celebrationTitle": "🎉 Des nouvelles de vos plantes",
     "birthdayLine": "🎂 C'est l'anniversaire de {name} aujourd'hui",
-    "firstFlowerLine": "🌸 {name} a sa première fleur !"
+    "firstFlowerLine": "🌸 {name} a sa première fleur !",
+    "birthdaysLine": "🎂 Anniversaires aujourd'hui : {names}"
   },
   "care": {
     "type": {

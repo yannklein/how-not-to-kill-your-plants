@@ -120,8 +120,21 @@ export async function runBirthdays(today: string): Promise<number> {
 
 const TEXT_FILL_DAYS = 2;
 
-/** Writes texts for recent posts that have none yet (oldest first). Returns how many got stored. */
-export async function runFeedTextFill(limit = 10): Promise<number> {
+let fillInFlight: Promise<number> | null = null;
+
+/**
+ * Writes texts for recent posts that have none yet (oldest first). Returns how
+ * many got stored. Overlapping calls (several actions in a row, a cron tick)
+ * share one run, so no event is sent to the model twice. Single app process.
+ */
+export function runFeedTextFill(limit = 10): Promise<number> {
+  fillInFlight ??= fillTexts(limit).finally(() => {
+    fillInFlight = null;
+  });
+  return fillInFlight;
+}
+
+async function fillTexts(limit: number): Promise<number> {
   const pending = await db
     .select({ id: feedEvent.id })
     .from(feedEvent)

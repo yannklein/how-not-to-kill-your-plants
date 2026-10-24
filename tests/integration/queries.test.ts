@@ -65,6 +65,12 @@ describe("dueTasksForUser", () => {
     const groups = await dueTasksForUser(ids.M, "2026-11-08");
     expect(groups.map((g) => g.plant.name)).toEqual(["all-overdue", "m-future", "m-today"]);
   });
+
+  it("never lets an old portrait reminder outrank care", async () => {
+    await db.insert(careTask).values({ plantId: p["m-future"], type: "photo", dueOn: "2026-10-01" });
+    const groups = await dueTasksForUser(ids.M, "2026-11-08");
+    expect(groups.map((g) => g.plant.name)).toEqual(["all-overdue", "m-today", "m-future"]);
+  });
 });
 
 describe("upcomingTasksForPlant", () => {

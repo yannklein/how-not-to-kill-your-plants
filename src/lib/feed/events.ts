@@ -1,13 +1,13 @@
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db/client";
-import { careTask, feedEvent, home, moment, user } from "@/db/schema";
+import { careTask, feedEvent, home, moment, photo, user } from "@/db/schema";
 import { getPlantForUser } from "@/lib/access";
 import { seasonOf } from "@/lib/care/season";
 import type { TaskOutcome, TaskType } from "@/lib/care/types";
 import { todayIn } from "@/lib/time";
 import { moodOf } from "./mood";
-import type { MomentType, Mood, PayloadOf, PostType } from "./types";
+import { MOMENT_TYPES, type MomentType, type Mood, type PayloadOf, type PostType } from "./types";
 
 async function homeSettings() {
   const [row] = await db.select({ timezone: home.timezone, hemisphere: home.hemisphere }).from(home).limit(1);
@@ -48,12 +48,13 @@ export async function createEvent<T extends PostType>(
   plantId: string,
   type: T,
   fields: Omit<PayloadOf<T>, "type" | "mood">,
+  opts: { createdAt?: Date } = {},
 ): Promise<string> {
   const mood = await currentMood(plantId);
   const [row] = await db
     .insert(feedEvent)
     // createdAt from the app clock (not the DB's) so day boundaries follow the home timezone consistently
-    .values({ plantId, type, payload: { ...fields, type, mood }, createdAt: new Date() })
+    .values({ plantId, type, payload: { ...fields, type, mood }, createdAt: opts.createdAt ?? new Date() })
     .returning({ id: feedEvent.id });
   return row.id;
 }
@@ -96,6 +97,8 @@ export async function logMoment(
   momentType: MomentType,
   photoId: string | null,
 ): Promise<{ momentId: string; eventId: string }> {
+  // The type comes from the browser; an unknown one would break every reader's feed.
+  if (!MOMENT_TYPES.includes(momentType)) throw new Error(`Unknown moment type: ${String(momentType)}`);
   await getPlantForUser(userId, plantId);
   const [{ flowers }] = await db
     .select({ flowers: sql<number>`count(*)::int` })
@@ -121,8 +124,8 @@ export async function deleteMoment(userId: string, momentId: string): Promise<vo
   const [row] = await db.select().from(moment).where(eq(moment.id, momentId));
   if (!row || row.userId !== userId) notFound();
   await getPlantForUser(userId, row.plantId);
-  await db.transaction(async (tx) => {
-    await tx
+  const removed = await db.transaction(async (tx) => {
+    const events = await tx
       .delete(feedEvent)
       .where(
         and(
@@ -130,9 +133,33 @@ export async function deleteMoment(userId: string, momentId: string): Promise<vo
           eq(feedEvent.type, "moment"),
           sql`${feedEvent.payload}->>'momentId' = ${momentId}`,
         ),
-      );
+      )
+      .returning({ createdAt: feedEvent.createdAt });
     await tx.delete(moment).where(eq(moment.id, momentId));
+    return events;
   });
+
+  // One action, one post: a photo that came with the undone moment gets its own post back.
+  if (row.photoId) {
+    const [taken] = await db.select({ takenAt: photo.takenAt }).from(photo).where(eq(photo.id, row.photoId));
+    if (!taken) return;
+    const [previous] = await db
+      .select({ takenAt: photo.takenAt })
+      .from(photo)
+      .where(and(eq(photo.plantId, row.plantId), eq(photo.kind, "plant"), lt(photo.takenAt, taken.takenAt)))
+      .orderBy(desc(photo.takenAt))
+      .limit(1);
+    await createEvent(
+      row.plantId,
+      "photo",
+      {
+        photoId: row.photoId,
+        userName: await userName(row.userId),
+        previousPhotoAt: previous ? previous.takenAt.toISOString() : null,
+      },
+      { createdAt: removed[0]?.createdAt },
+    );
+  }
 }
 
 /** The self-introduction of a newly added plant. */

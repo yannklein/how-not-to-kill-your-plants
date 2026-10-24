@@ -101,4 +101,15 @@ describe("feed cron", () => {
     expect(await runFeedTextFill()).toBe(0);
     expect(await db.select().from(feedText).where(and())).toHaveLength(0);
   });
+
+  it("never writes the same post twice when two fills overlap", async () => {
+    const p = await addPlant();
+    const [ev] = await db
+      .insert(feedEvent)
+      .values({ plantId: p.id, type: "first", payload: { type: "first", mood: "happy", userName: "Yann" } })
+      .returning();
+    await Promise.all([runFeedTextFill(), runFeedTextFill()]);
+    const [after] = await db.select().from(feedEvent).where(eq(feedEvent.id, ev.id));
+    expect(after.textAttempts).toBe(1);
+  });
 });

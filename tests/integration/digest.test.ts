@@ -146,4 +146,38 @@ describe("runDigests", () => {
     expect(body.startsWith("Ficus, Fern · 1 task overdue")).toBe(true);
     expect(body.split("Ficus").length - 1).toBe(2);
   });
+
+  it("leaves portrait reminders out of the morning push", async () => {
+    await seed({ due: false });
+    const [fern] = await db.select().from(plant).where(eq(plant.name, "Fern"));
+    await db.insert(careTask).values({ plantId: fern.id, type: "photo", dueOn: "2026-10-20" });
+    expect(await runDigests(new Date("2026-11-05T07:45:00Z"), deps)).toEqual({ sent: 0 });
+  });
+
+  it("counts only care in the plant list and overdue count", async () => {
+    await seed();
+    const [fern] = await db.select().from(plant).where(eq(plant.name, "Fern"));
+    await db.insert(careTask).values({ plantId: fern.id, type: "photo", dueOn: "2026-10-20" });
+    await runDigests(new Date("2026-11-05T07:45:00Z"), deps);
+    expect(send.mock.calls[0][1].body).toBe("Ficus, Fern · 1 task overdue");
+  });
+
+  it("folds many birthdays into one short line", async () => {
+    await seed({ due: false });
+    const [g] = await db.select().from(group);
+    await db
+      .insert(plant)
+      .values(["Aloe", "Begonia", "Calathea"].map((name) => ({ groupId: g.id, name, acquiredOn: "2026-10-01" })));
+    const all = await db.select({ id: plant.id }).from(plant);
+    expect(all).toHaveLength(5);
+    for (const p of all)
+      await db.insert(feedEvent).values({
+        plantId: p.id, type: "birthday", payload: { type: "birthday", mood: "happy", kind: "month", years: 0 },
+        createdAt: new Date("2026-11-05T06:00:00Z"),
+      });
+    await runDigests(new Date("2026-11-05T07:45:00Z"), deps);
+    const body: string = send.mock.calls[0][1].body;
+    expect(body.match(/🎂/g)).toHaveLength(1);
+    expect(body).toContain("+1");
+  });
 });

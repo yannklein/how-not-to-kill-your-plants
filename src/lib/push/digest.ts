@@ -23,22 +23,26 @@ async function homeSettings() {
   };
 }
 
+/** "A, B, C, D +2" */
+const shortList = (names: string[]) =>
+  names.slice(0, MAX_NAMES).join(", ") + (names.length > MAX_NAMES ? ` +${names.length - MAX_NAMES}` : "");
+
 type Celebration = { name: string; kind: "birthday" | "firstFlower" };
 
 async function digestMessage(locale: string, groups: DueGroup[], celebrations: Celebration[]) {
   const l = isLocale(locale) ? locale : "en";
   const messages = (await import(`../../../messages/${l}.json`)).default;
   const t = createTranslator({ locale: l, messages, namespace: "push" });
-  const lines = celebrations.map((c) =>
-    t(c.kind === "birthday" ? "birthdayLine" : "firstFlowerLine", { name: c.name }),
-  );
+  const birthdays = celebrations.filter((c) => c.kind === "birthday").map((c) => c.name);
+  const lines = [
+    birthdays.length === 1 ? t("birthdayLine", { name: birthdays[0] }) : null,
+    birthdays.length > 1 ? t("birthdaysLine", { names: shortList(birthdays) }) : null,
+    ...celebrations.filter((c) => c.kind === "firstFlower").map((c) => t("firstFlowerLine", { name: c.name })),
+  ].filter((x): x is string => x !== null);
   if (groups.length === 0) return { title: t("celebrationTitle"), body: lines.join(" · ") };
 
-  const names = groups.map((g) => g.plant.name);
-  const shown = names.slice(0, MAX_NAMES).join(", ");
-  const more = names.length > MAX_NAMES ? ` +${names.length - MAX_NAMES}` : "";
   const overdue = groups.reduce((n, g) => n + g.tasks.filter((x) => x.overdueDays > 0).length, 0);
-  const body = [t("digestBody", { names: shown + more }), overdue > 0 ? t("digestOverdue", { count: overdue }) : null, ...lines]
+  const body = [t("digestBody", { names: shortList(groups.map((g) => g.plant.name)) }), overdue > 0 ? t("digestOverdue", { count: overdue }) : null, ...lines]
     .filter(Boolean)
     .join(" · ");
   return { title: t("digestTitle", { count: groups.length }), body };
@@ -104,10 +108,14 @@ export async function runDigests(
       // Missed the morning (e.g. cron outage): no late digest.
       if (minutesOf(localTime) - minutesOf(u.pushTime) > LATE_WINDOW_MINUTES) continue;
 
-      const [groups, celebrations] = await Promise.all([
+      const [due, celebrations] = await Promise.all([
         dueTasksForUser(u.id, today),
         celebrationsFor(u.id, today, timezone, now),
       ]);
+      // The push stays about care: portrait reminders only show in the app.
+      const groups = due
+        .map((g) => ({ ...g, tasks: g.tasks.filter((x) => x.type !== "photo") }))
+        .filter((g) => g.tasks.length > 0);
       if (groups.length === 0 && celebrations.length === 0) continue;
       const { title, body } = await digestMessage(u.locale, groups, celebrations);
       const subs = await db.select().from(pushSubscription).where(eq(pushSubscription.userId, u.id));

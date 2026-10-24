@@ -74,6 +74,9 @@ export async function callStructured(args: {
   schema: z.ZodType;
   /** Server-side refusal fallback; Haiku 5.5 has none, so callers on Haiku pass false. */
   fallback?: boolean;
+  /** Per-request limits for optional calls that must not hold up other work. */
+  timeoutMs?: number;
+  maxRetries?: number;
 }): Promise<StructuredOutput> {
   const fallback = args.fallback ?? true;
   const message = await getClient().beta.messages.create({
@@ -83,6 +86,9 @@ export async function callStructured(args: {
     system: [{ type: "text", text: args.system, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: args.content }],
     output_config: { effort: "medium", format: zodOutputFormat(args.schema) },
+  }, {
+    ...(args.timeoutMs !== undefined ? { timeout: args.timeoutMs } : {}),
+    ...(args.maxRetries !== undefined ? { maxRetries: args.maxRetries } : {}),
   });
   const usage = message.usage as Usage;
   if (message.stop_reason === "refusal") {

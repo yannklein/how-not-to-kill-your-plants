@@ -107,3 +107,16 @@ describe("callStructured server-side fallback", () => {
     expect(params).not.toHaveProperty("betas");
   });
 });
+
+describe("callStructured request options", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("passes a timeout and retry limit when given", async () => {
+    const ok = { stop_reason: "end_turn", content: [{ type: "text", text: '{"a":1}' }], usage: { input_tokens: 1, output_tokens: 1 } };
+    const create = vi.spyOn(Anthropic.Beta.Messages.prototype, "create").mockResolvedValue(ok as never);
+    await callStructured({
+      model: "claude-haiku-5-5", maxTokens: 10, system: "s", content: "c", schema: z.object({ a: z.number() }),
+      fallback: false, timeoutMs: 30_000, maxRetries: 1,
+    });
+    expect(create.mock.calls[0][1]).toMatchObject({ timeout: 30_000, maxRetries: 1 });
+  });
+});
