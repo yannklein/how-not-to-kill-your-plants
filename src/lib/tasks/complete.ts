@@ -48,8 +48,14 @@ function scheduleProfileOf(raw: Record<string, unknown> | null | undefined): Sch
   return parsed.success ? parsed.data : FALLBACK_PROFILE;
 }
 
-async function latestCompletion(taskId: string): Promise<{ name: string; at: Date } | undefined> {
-  const [row] = await db
+type Executor = Pick<typeof db, "select">;
+
+/** The loser's lookup: who completed this task most recently, and when. */
+async function latestCompletion(
+  executor: Executor,
+  taskId: string,
+): Promise<{ name: string; at: Date } | undefined> {
+  const [row] = await executor
     .select({ name: user.name, at: taskCompletion.completedAt })
     .from(taskCompletion)
     .innerJoin(user, eq(taskCompletion.userId, user.id))
@@ -57,6 +63,11 @@ async function latestCompletion(taskId: string): Promise<{ name: string; at: Dat
     .orderBy(desc(taskCompletion.completedAt))
     .limit(1);
   return row;
+}
+
+/** already_done result; with no completion on record, an empty name and now. */
+function alreadyDone(last: { name: string; at: Date } | undefined): CompleteResult {
+  return { status: "already_done", by: { name: last?.name ?? "" }, at: last?.at ?? new Date() };
 }
 
 /**
@@ -89,8 +100,7 @@ export async function completeTask(input: {
   }
 
   if (!task.active) {
-    const last = await latestCompletion(task.id);
-    return { status: "already_done", by: { name: last?.name ?? "" }, at: last?.at ?? new Date() };
+    return alreadyDone(await latestCompletion(db, task.id));
   }
 
   const [homeRow] = await db.select().from(home).limit(1);
@@ -130,14 +140,7 @@ export async function completeTask(input: {
       .returning({ id: careTask.id });
 
     if (!updated) {
-      const [last] = await tx
-        .select({ name: user.name, at: taskCompletion.completedAt })
-        .from(taskCompletion)
-        .innerJoin(user, eq(taskCompletion.userId, user.id))
-        .where(eq(taskCompletion.taskId, task.id))
-        .orderBy(desc(taskCompletion.completedAt))
-        .limit(1);
-      return { status: "already_done", by: { name: last?.name ?? "" }, at: last?.at ?? new Date() };
+      return alreadyDone(await latestCompletion(tx, task.id));
     }
 
     await tx.insert(taskCompletion).values({
