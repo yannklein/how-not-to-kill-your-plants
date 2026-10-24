@@ -215,7 +215,10 @@
     "digestOverdue": "{count, plural, one {# tâche en retard} other {# tâches en retard}}",
     "installTitle": "Installer l'application",
     "installBody": "Sur iPhone, touchez Partager, puis Sur l'écran d'accueil. Les notifications ne fonctionnent qu'une fois l'application installée.",
-    "dismiss": "Fermer"
+    "dismiss": "Fermer",
+    "celebrationTitle": "🎉 Des nouvelles de vos plantes",
+    "birthdayLine": "🎂 C'est l'anniversaire de {name} aujourd'hui",
+    "firstFlowerLine": "🌸 {name} a sa première fleur !"
   },
   "care": {
     "type": {

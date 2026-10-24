@@ -1,6 +1,16 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { env } from "@/lib/env";
+import { db } from "@/db/client";
+import { home } from "@/db/schema";
+import {
+  backfillPhotoTasks,
+  runBirthdays,
+  runFeedTextFill,
+  runMoodChanges,
+  runSeasonChanges,
+} from "@/lib/feed/cron";
 import { runCareProfileRetries, runDigests } from "@/lib/push/digest";
+import { todayIn } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +25,26 @@ function authorized(req: Request): boolean {
 
 export async function POST(req: Request) {
   if (!authorized(req)) return Response.json({ error: "unauthorized" }, { status: 401 });
-  const profilesReady = await runCareProfileRetries();
-  const { sent } = await runDigests(new Date());
-  return Response.json({ profilesReady, digestsSent: sent });
+  const now = new Date();
+  const [h] = await db.select({ timezone: home.timezone }).from(home).limit(1);
+  const today = todayIn(h?.timezone ?? "Europe/Madrid", now);
+
+  // Each step on its own: one failing never stops the others (or the morning digest).
+  const profilesReady = await step("care profiles", runCareProfileRetries);
+  const photoTasks = await step("photo tasks", backfillPhotoTasks);
+  const birthdays = await step("birthdays", () => runBirthdays(today));
+  const moodPosts = await step("moods", () => runMoodChanges(today));
+  const seasonPosts = await step("seasons", () => runSeasonChanges(today));
+  const textsWritten = await step("feed texts", () => runFeedTextFill());
+  const digestsSent = await step("digests", async () => (await runDigests(now)).sent);
+  return Response.json({ profilesReady, photoTasks, birthdays, moodPosts, seasonPosts, textsWritten, digestsSent });
+}
+
+async function step(name: string, run: () => Promise<number>): Promise<number> {
+  try {
+    return await run();
+  } catch (error) {
+    console.error(`cron tick: ${name} failed`, error);
+    return 0;
+  }
 }

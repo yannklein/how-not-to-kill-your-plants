@@ -215,7 +215,10 @@
     "digestOverdue": "{count, plural, one {# task overdue} other {# tasks overdue}}",
     "installTitle": "Install this app",
     "installBody": "On iPhone, tap Share, then Add to Home Screen. Notifications only work once the app is installed.",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "celebrationTitle": "🎉 Plant news",
+    "birthdayLine": "🎂 It's {name}'s birthday today",
+    "firstFlowerLine": "🌸 {name} has its first flower!"
   },
   "care": {
     "type": {

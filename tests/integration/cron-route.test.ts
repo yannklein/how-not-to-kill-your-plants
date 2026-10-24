@@ -36,7 +36,7 @@ describe("POST /api/cron/tick", () => {
 
     const res = await tick("Bearer test");
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ profilesReady: 1, digestsSent: 0 });
+    expect(await res.json()).toMatchObject({ profilesReady: 1, digestsSent: 0 });
 
     const [row] = await db.select().from(species).where(eq(species.id, sp.id));
     expect(row.careProfileStatus).toBe("ready");
@@ -58,7 +58,10 @@ describe("POST /api/cron/tick", () => {
       .returning({ id: plant.id });
     await tick("Bearer test");
     const before = await db.select().from(careTask).where(eq(careTask.plantId, p.id));
-    expect(await (await tick("Bearer test")).json()).toEqual({ profilesReady: 0, digestsSent: 0 });
+    const body = await (await tick("Bearer test")).json();
+    expect(body).toMatchObject({ profilesReady: 0, digestsSent: 0 });
+    for (const key of ["photoTasks", "birthdays", "moodPosts", "seasonPosts", "textsWritten"])
+      expect(typeof body[key], key).toBe("number");
     const after = await db.select().from(careTask).where(and(eq(careTask.plantId, p.id)));
     expect(after).toHaveLength(before.length);
   });

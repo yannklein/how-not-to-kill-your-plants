@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { careTask, group, groupMember, home, plant, pushSubscription, user } from "@/db/schema";
+import { careTask, feedEvent, group, groupMember, home, plant, pushSubscription, user } from "@/db/schema";
 import { runDigests } from "@/lib/push/digest";
 import { setLocale } from "@/lib/settings";
 import { db, resetDb } from "./setup";
@@ -120,5 +120,30 @@ describe("runDigests", () => {
     const [a, b] = await Promise.all([runDigests(now, deps), runDigests(now, deps)]);
     expect(a.sent + b.sent).toBe(1);
     expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends a birthday line even on a day with nothing due", async () => {
+    await seed({ due: false });
+    const [fern] = await db.select().from(plant).where(eq(plant.name, "Fern"));
+    await db.insert(feedEvent).values({
+      plantId: fern.id, type: "birthday", payload: { type: "birthday", mood: "happy", kind: "month", years: 0 },
+      createdAt: new Date("2026-11-05T06:00:00Z"),
+    });
+    expect(await runDigests(new Date("2026-11-05T07:45:00Z"), deps)).toEqual({ sent: 1 });
+    expect(send.mock.calls[0][1].body).toContain("Fern");
+  });
+
+  it("adds a first-flower line to the care digest", async () => {
+    await seed();
+    const [ficus] = await db.select().from(plant).where(eq(plant.name, "Ficus"));
+    await db.insert(feedEvent).values({
+      plantId: ficus.id, type: "moment",
+      payload: { type: "moment", mood: "proud", momentId: "m", momentType: "flower", photoId: null, userName: "Y", firstFlower: true },
+      createdAt: new Date("2026-11-05T06:00:00Z"),
+    });
+    await runDigests(new Date("2026-11-05T07:45:00Z"), deps);
+    const body: string = send.mock.calls[0][1].body;
+    expect(body.startsWith("Ficus, Fern · 1 task overdue")).toBe(true);
+    expect(body.split("Ficus").length - 1).toBe(2);
   });
 });

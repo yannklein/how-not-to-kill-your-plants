@@ -215,7 +215,10 @@
     "digestOverdue": "{count, plural, one {# tarefa atrasada} other {# tarefas atrasadas}}",
     "installTitle": "Instalar o app",
     "installBody": "No iPhone, toque em Compartilhar e depois em Adicionar à Tela de Início. As notificações só funcionam com o app instalado.",
-    "dismiss": "Dispensar"
+    "dismiss": "Dispensar",
+    "celebrationTitle": "🎉 Novidades das plantas",
+    "birthdayLine": "🎂 Hoje é aniversário de {name}",
+    "firstFlowerLine": "🌸 {name} deu a primeira flor!"
   },
   "care": {
     "type": {
