@@ -63,6 +63,16 @@ describe("completeTask", () => {
     expect(r).toMatchObject({ status: "already_done", by: { name: "Yann" } });
   });
 
+  it("returns already_done without writing when expectedVersion is ahead of the row", async () => {
+    const r = await completeTask({ userId: Y, taskId, expectedVersion: 5, outcome: "done" });
+    expect(r.status).toBe("already_done");
+    expect(await db.select().from(taskCompletion)).toHaveLength(0);
+    const [task] = await db.select().from(careTask).where(eq(careTask.id, taskId));
+    expect(task.version).toBe(0);
+    expect(task.active).toBe(true);
+    expect(task.dueOn).toBe("2026-10-25");
+  });
+
   it("throws not-found for a non-member and writes nothing", async () => {
     await expect(
       completeTask({ userId: M, taskId, expectedVersion: 0, outcome: "done" }),

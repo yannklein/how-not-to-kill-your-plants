@@ -4,7 +4,7 @@ import { db } from "@/db/client";
 import { careTask, home, plant, pushSubscription, species, user } from "@/db/schema";
 import { isLocale } from "@/i18n/locales";
 import { ensureCareProfile } from "@/lib/ai/care-profile";
-import type { CareProfile } from "@/lib/ai/schemas";
+import { CareProfile } from "@/lib/ai/schemas";
 import { initialTasks } from "@/lib/care/schedule";
 import { dueTasksForUser, type DueGroup } from "@/lib/tasks/queries";
 import { localTimeIn, todayIn } from "@/lib/time";
@@ -142,9 +142,13 @@ export async function runCareProfileRetries(now: Date = new Date()): Promise<num
       ),
     );
   for (const { plant: p, profile } of missing) {
-    if (!profile) continue;
+    const parsed = CareProfile.safeParse(profile);
+    if (!parsed.success) {
+      console.error(`task backfill skipped for plant ${p.id}: invalid care profile`, parsed.error.message);
+      continue;
+    }
     try {
-      await backfillPlant(p, profile as unknown as CareProfile, today, hemisphere);
+      await backfillPlant(p, parsed.data, today, hemisphere);
     } catch (error) {
       console.error(`task backfill failed for plant ${p.id}`, error);
     }

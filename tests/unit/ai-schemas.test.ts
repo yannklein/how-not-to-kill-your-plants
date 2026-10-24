@@ -31,6 +31,24 @@ describe("schemas", () => {
     const text = { en: mockProfile.text.en, fr: mockProfile.text.fr };
     expect(CareProfile.safeParse({ ...mockProfile, text }).success).toBe(false);
   });
+  it("checkCareProfile rounds intervals to whole days >= 1", () => {
+    const out = checkCareProfile({
+      ...mockProfile,
+      waterIntervalDays: { growing: { min: 6.6, max: 10.4 }, dormant: { min: 0.3, max: 14.5 } },
+      repotEveryMonths: 18.4,
+      fertilizeEveryDays: 29.6,
+      rotateEveryDays: 0.2,
+      dustEveryDays: 14.5,
+      mistEveryDays: 2.2,
+    });
+    expect(out.waterIntervalDays).toEqual({
+      growing: { min: 7, max: 10 },
+      dormant: { min: 1, max: 15 },
+    });
+    expect([out.repotEveryMonths, out.fertilizeEveryDays, out.rotateEveryDays, out.dustEveryDays]).toEqual([18, 30, 1, 15]);
+    expect(out.mistEveryDays).toBe(2);
+    expect(checkCareProfile({ ...mockProfile, mistEveryDays: null }).mistEveryDays).toBeNull();
+  });
   it("checkCareProfile rejects inverted ranges", () => {
     expect(() =>
       checkCareProfile({ ...mockProfile, tempC: { min: 30, max: 10 } }),

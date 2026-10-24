@@ -64,8 +64,14 @@ export const CareProfile = z.object({
 });
 export type CareProfile = z.infer<typeof CareProfile>;
 
-/** Post-parse sanity checks for what the structured-output schema cannot enforce. */
-export function checkCareProfile(p: CareProfile): void {
+const wholeDays = (n: number): number => Math.max(1, Math.round(n));
+
+/**
+ * Post-parse sanity checks for what the structured-output schema cannot enforce.
+ * Throws on invalid input; returns the profile with every interval rounded to a
+ * whole number >= 1 (the model sometimes answers 0.5 or 10.5).
+ */
+export function checkCareProfile(p: CareProfile): CareProfile {
   const ranges = [p.waterIntervalDays.growing, p.waterIntervalDays.dormant, p.tempC];
   for (const r of ranges) {
     if (!(r.min <= r.max)) throw new Error("Care profile range has min > max");
@@ -82,6 +88,19 @@ export function checkCareProfile(p: CareProfile): void {
   if (p.mistEveryDays !== null && !(p.mistEveryDays > 0)) {
     throw new Error("Care profile mist interval must be positive");
   }
+  const water = p.waterIntervalDays;
+  return {
+    ...p,
+    waterIntervalDays: {
+      growing: { min: wholeDays(water.growing.min), max: wholeDays(water.growing.max) },
+      dormant: { min: wholeDays(water.dormant.min), max: wholeDays(water.dormant.max) },
+    },
+    repotEveryMonths: wholeDays(p.repotEveryMonths),
+    fertilizeEveryDays: wholeDays(p.fertilizeEveryDays),
+    rotateEveryDays: wholeDays(p.rotateEveryDays),
+    dustEveryDays: wholeDays(p.dustEveryDays),
+    mistEveryDays: p.mistEveryDays === null ? null : wholeDays(p.mistEveryDays),
+  };
 }
 
 /** Lowercase genus + species, without cultivar quotes, var./cv. suffixes or spacing noise. */

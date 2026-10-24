@@ -13,7 +13,7 @@ import { FALLBACK_PROFILE } from "@/lib/tasks/complete";
 import { todayIn } from "@/lib/time";
 
 /** How long saving waits for a species' care profile before falling back to the water task only. */
-export const CARE_PROFILE_WAIT_MS = 20_000;
+export const CARE_PROFILE_WAIT_MS = 3_000;
 
 export type CreatePlantInput = {
   photoKeys: string[];

@@ -18,7 +18,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 # One-shot tools, bundled so the runtime image needs neither tsx nor a .env.
 RUN npx esbuild src/db/migrate.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/migrate.js \
- && npx esbuild scripts/create-admin.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/create-admin.js
+ && npx esbuild scripts/create-admin.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/create-admin.js \
+ && npx esbuild scripts/ai-smoke.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/ai-smoke.js
 
 FROM base AS runner
 WORKDIR /app
@@ -35,4 +36,4 @@ COPY --from=build --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=build --chown=nextjs:nodejs /app/dist ./dist
 USER nextjs
 EXPOSE 3000
-CMD ["sh", "-c", "node dist/migrate.js && node server.js"]
+CMD ["sh", "-c", "node dist/migrate.js && exec node server.js"]

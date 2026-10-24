@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { species } from "@/db/schema";
 import { env } from "@/lib/env";
 import { withBudget } from "./budget";
-import { callStructured, type StructuredOutput } from "./client";
+import { callStructured, isTransientApiError, type StructuredOutput } from "./client";
 import { mockProfile, MOCK_USAGE } from "./mock";
 import { CareProfile, checkCareProfile, normalizeScientificName } from "./schemas";
 
@@ -48,7 +48,8 @@ export type CareProfileDeps = {
 function generateLive(sp: Species): Promise<StructuredOutput> {
   return callStructured({
     model: MODEL,
-    maxTokens: 8000,
+    // Adaptive thinking is on by default and shares max_tokens with the answer.
+    maxTokens: 16_000,
     system: CARE_PROFILE_SYSTEM_PROMPT,
     content: `Write the care profile for: ${sp.scientificName}.`,
     schema: CareProfile,
@@ -105,8 +106,7 @@ async function generateProfile(
       return { result: res, usage: res.usage };
     });
     if (out.refused) throw new Error("Care profile generation was refused");
-    const profile = CareProfile.parse(out.output);
-    checkCareProfile(profile);
+    const profile = checkCareProfile(CareProfile.parse(out.output));
     // Conditional on not-yet-ready so a concurrent winner is not overwritten.
     await db
       .update(species)
@@ -114,6 +114,11 @@ async function generateProfile(
       .where(sql`${species.id} = ${speciesId} and ${species.careProfileStatus} <> 'ready'`);
     return "ready";
   } catch (error) {
+    if (isTransientApiError(error)) {
+      // Service unavailable, not a verdict on the species: stay pending, attempts unchanged.
+      console.error(`ensureCareProfile: transient API error for species ${speciesId}, will retry`, error);
+      return "failed";
+    }
     console.error(`ensureCareProfile failed for species ${speciesId}`, error);
     await recordFailure(speciesId);
     return "failed";

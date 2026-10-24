@@ -99,7 +99,8 @@ export async function completeTask(input: {
     throw new InvalidOutcomeError(task.type, outcome);
   }
 
-  if (!task.active) {
+  // Inactive (already done) or stale version: someone else got there first.
+  if (!task.active || task.version !== expectedVersion) {
     return alreadyDone(await latestCompletion(db, task.id));
   }
 

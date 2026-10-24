@@ -34,10 +34,13 @@ export type IdentifyDeps = {
   call?: (input: IdentifyInput) => Promise<StructuredOutput>;
 };
 
+// Sonnet 5.5 thinks adaptively by default and thinking shares max_tokens with the answer.
+const MAX_TOKENS = 16_000;
+
 function callLive(input: IdentifyInput): Promise<StructuredOutput> {
   return callStructured({
     model: MODEL,
-    maxTokens: 4000,
+    maxTokens: MAX_TOKENS,
     system: IDENTIFY_SYSTEM_PROMPT,
     content: [
       ...input.images.map((img) => ({

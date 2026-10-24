@@ -1,6 +1,6 @@
 # Deploying to Coolify
 
-The app ships as one Docker image (`Dockerfile`, node:24-alpine, non-root). On start it runs `node dist/migrate.js && node server.js` on port 3000, so migrations are applied on every deploy.
+The app ships as one Docker image (`Dockerfile`, node:24-alpine, non-root). On start it runs `node dist/migrate.js && exec node server.js` on port 3000, so migrations are applied on every deploy.
 
 ## 1. Coolify resources
 
@@ -53,6 +53,16 @@ node dist/create-admin.js --email you@example.com --name Yann --password 'a-long
 ```
 
 (`npm run create-admin` is the dev equivalent and needs a `.env` file and `tsx`; the container has neither, so it uses the bundled `dist/create-admin.js`, which reads the container's environment.) It creates the admin, the home row and the "Everyone" group.
+
+### Smoke-test the AI (before inviting anyone)
+
+Live mode has never been exercised against the real API in development, so check it once right after bootstrap, with `AI_MODE=live` and a real `ANTHROPIC_API_KEY` set. In the app container terminal, pass any plant JPEG (a local path or an `https://` URL; the image does not ship the e2e fixture):
+
+```
+node dist/ai-smoke.js https://example.com/some-plant.jpg
+```
+
+It identifies the photo, generates one care profile for the top candidate into the database, and prints the candidates, the profile status, the `ai_usage` rows and the total cost (a few cents). Warnings starting `callStructured: no output` show the `stop_reason`, `stop_details` and token usage if the model refused, ran out of tokens or returned invalid JSON. Fix any failure before inviting Adriana and Marcela. (Dev equivalent: `npm run ai-smoke -- e2e/fixtures/pilea.jpg`.)
 
 ## 5. First setup in the app
 

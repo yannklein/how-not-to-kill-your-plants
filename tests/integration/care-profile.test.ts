@@ -92,6 +92,16 @@ describe("ensureCareProfile (AI_MODE=mock)", () => {
     expect(generate).toHaveBeenCalledTimes(3);
   });
 
+  it("does not count a 503 / connection error as an attempt", async () => {
+    const sp = await getOrCreateSpecies("Pilea peperomioides", "Chinese money plant");
+    const generate = vi.fn().mockRejectedValue(Object.assign(new Error("overloaded"), { status: 503 }));
+    expect(await ensureCareProfile(sp.id, { generate })).toBe("failed");
+    expect(await ensureCareProfile(sp.id, { generate })).toBe("failed");
+    const [row] = await db.select().from(species).where(eq(species.id, sp.id));
+    expect(row).toMatchObject({ careProfileStatus: "pending", profileAttempts: 0 });
+    expect(await db.select().from(aiUsage)).toHaveLength(0);
+  });
+
   it("records usage and counts a failure when the output is invalid", async () => {
     const sp = await getOrCreateSpecies(
       "Pilea peperomioides",
