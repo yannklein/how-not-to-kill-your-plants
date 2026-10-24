@@ -57,3 +57,14 @@ export function addDays(day: string, n: number): string {
 export function daysBetween(a: string, b: string): number {
   return Math.round((utcMs(b) - utcMs(a)) / DAY_MS);
 }
+
+/** Adds `n` calendar months to a day, clamping to the last day of a shorter month. */
+export function addMonths(day: string, n: number): string {
+  const [y, m, d] = day.split("-").map(Number);
+  const index = y * 12 + (m - 1) + n;
+  const year = Math.floor(index / 12);
+  const month = index - year * 12; // 0-11
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const dd = String(Math.min(d, lastDay)).padStart(2, "0");
+  return `${String(year).padStart(4, "0")}-${String(month + 1).padStart(2, "0")}-${dd}`;
+}

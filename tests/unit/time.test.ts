@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, daysBetween, localTimeIn, monthKeyIn, todayIn } from "@/lib/time";
+import { addDays, addMonths, daysBetween, localTimeIn, monthKeyIn, todayIn } from "@/lib/time";
 
 describe("todayIn", () => {
   it("uses the home timezone, not UTC", () => {
@@ -49,5 +49,20 @@ describe("daysBetween", () => {
 
   it("is not shifted by the DST change", () => {
     expect(daysBetween("2026-03-28", "2026-03-30")).toBe(2);
+  });
+});
+
+describe("addMonths", () => {
+  it("adds months across years", () => {
+    expect(addMonths("2027-03-20", 22)).toBe("2029-01-20");
+  });
+
+  it("clamps to the end of a shorter month", () => {
+    expect(addMonths("2027-01-31", 1)).toBe("2027-02-28");
+    expect(addMonths("2028-01-31", 1)).toBe("2028-02-29");
+  });
+
+  it("handles negative offsets", () => {
+    expect(addMonths("2027-03-15", -4)).toBe("2026-11-15");
   });
 });
