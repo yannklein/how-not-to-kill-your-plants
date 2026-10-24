@@ -1,0 +1,123 @@
+# Phase 1 follow-ups
+
+Decisions taken during the Phase 1 build and the minor issues the reviews deferred. Use this list when planning Phase 2.
+
+## Rulings made during the build
+- R1: Task 2 hand-writes Better Auth 1.7 core tables (user incl. admin-plugin fields role/banned/banReason/banExpires + domain fields locale/pushTime/lastDigestOn; session incl. impersonatedBy; account; verification) in schema.ts so domain FKs work; Task 3 runs the BA CLI to verify and reconciles with a migration — why: T2 FKs need `user` now — cost if wrong: one extra migration in T3.
+- R2: resolveLocale lives in src/i18n/locales.ts (pure), re-exported from request.ts; tests import from locales — why: keep unit tests free of server deps — cost if wrong: none.
+- R3: every server action is a thin wrapper (requireUser/requireAdmin + revalidate) over a lib function taking userId explicitly (storeDraftPhoto(userId,file), createPlantWithTasks(userId,input), regenerateCalendarToken(userId), etc.); integration tests call the lib functions — why: tests can't carry a Next session — cost if wrong: none.
+- R4: Task 7 also produces getObjectBytes(key): Promise<Buffer> in storage.ts — why: identifyAction(photoKeys) must read uploaded photos — cost if wrong: none.
+- R5: Task 9 fertilize test expects "2028-03-01" (not "2027-09-01") for today 2027-08-20 — why: spec §5 pauses fertilizing in dormant season; 2027-09-19 is N autumn, and plan's own nextGrowingStart(N) is 03-01 — cost if wrong: one test value.
+- R6: createPlantWithTasks awaits ensureCareProfile for a not-ready species, bounded by a 20s timeout; ready → full initialTasks, else water only (cron fills the rest). identifyAction also pre-warms getOrCreateSpecies+ensureCareProfile for the top candidate via next/server after() — why: reconcile plan test with the 30s target — cost if wrong: first save of a new species can wait up to 20s.
+- R7: Task 10 owns the e2e harness: separate DB `plants_e2e` on the 5433 Postgres, Playwright globalSetup migrates+truncates+seeds Y/A/M users, groups YA/M/ALL, home; webServer runs the app with AI_MODE=mock against it — why: no task owned it and T10 is the first e2e — cost if wrong: harness rework in T11.
+- R8: buildIcs (and push digest text) use next-intl's synchronous createTranslator with the imported messages JSON, not getTranslations — why: buildIcs is a pure sync function — cost if wrong: none.
+- R9: if @serwist/next can't run under Turbopack, use `next build --webpack` (and dev with --webpack or SW disabled in dev) — why: keep the plan's Serwist choice — cost if wrong: slower builds.
+- R10: where a pinned version isn't published, use the newest published release in the same major (or nearest) and note it in the report — why: plan versions are targets, not hard constraints — cost if wrong: minor API differences handled in-task.
+- R11: Task 3 (first session-dependent page) sets cacheComponents:false and removes partialPrefetching — app is fully per-user dynamic, so these give no benefit and force Suspense/"use cache" work everywhere — cost if wrong: lose PPR optimizations irrelevant for 3 users.
+- R12: acceptInvite adds the new user to the "Everyone" group (created by create-admin) in the same flow — why: spec §1/§2 has all three sharing the living-room plants and the bootstrap names that group; Task 6 still manages other groups — cost if wrong: admin removes a member in Task 6's UI.
+- R13: ensureCareProfile makes ONE attempt per call (pending until attempts reach 3, then failed); early return only when attempts ≥ 3; test becomes 3 calls — why: plan Task 13 cron retries pending species every 15 min, a burst loop turns a short outage into permanent failure; plan's test values (failed, attempts 3) still hold — cost if wrong: profiles take up to 30 min longer after repeated failures.
+- R14: identifyPlant never throws for model/API/parse failures — returns the not-a-plant/empty-candidates result (with a `refused`/`error` hint flag) so Task 10 falls to free-text species — why: Review Focus 3 — cost if wrong: an API outage looks like "not recognised" to the user.
+- R15: dedupe concurrent ensureCareProfile calls in-process with a module-level Map<speciesId, Promise> (single app container on Coolify); createPlantWithTasks' 20s wait then joins the pre-warm's in-flight generation — why: no schema change, covers pre-warm vs Save vs cron in one process — cost if wrong: a multi-instance deploy could still double-generate (one extra profile call per new species).
+- R16: changing the watering override takes effect at the next water completion (no immediate reschedule) — why: spec §5 adaptive schedule is completion-driven; brief silent — cost if wrong: one watering cycle on the old interval after an edit.
+- R17: a user's digest is evaluated once per day — at the first tick at/after pushTime, set lastDigestOn = today whether or not anything was due/sent; and skip (but still mark) when localTime is more than 3h past pushTime — why: spec "one morning digest at a time they choose"; supersedes my earlier "set only after attempted" instruction — cost if wrong: a task that becomes due later the same day gets no push (still in app + calendar); after a >3h cron outage that morning's digest is skipped.
+- R18: every tick also runs a backfill pass: alive plants whose species is ready and that have no `fertilize` care_task row get the missing initialTasks (onConflictDoNothing) — why: covers Retry, the R6 timeout→pre-warm race, and a backfill that threw mid-tick; tasks are never deleted so "has a fertilize row" marks a backfilled plant — cost if wrong: one cheap extra query per tick.
+- R19: cut CARE_PROFILE_WAIT_MS default from 20 s to 3 s — why: R18's per-tick backfill now fills missing tasks, so R6's long wait only threatens spec §3's 30-second anti-goal — cost if wrong: new-species plants get their non-water tasks up to 15 min later.
+- R20: no live AI smoke test in this session (no API key here); instead log stop_reason/stop_details/usage on every null-output path, don't count transport/5xx/429 errors as profile attempts, add a runnable `scripts/ai-smoke` for Yann, and make it the first gate of Task 15 — why: can't call the live API from here — cost if wrong: a live-mode misconfiguration surfaces only at Yann's smoke run.
+- R21: final fix wave also takes these minors (cheap, user-facing or invariant-protecting): version guard in completeTask; exec node in Dockerfile; .env.docker.example consistency; text after last fallback block; sign-out button; home grouped by plant (spec §4); safeParse in backfill; integer-round care-profile intervals. Deferred: Everyone-by-name auto-join, SW stale HTML, §13 three-user/language e2e, rest of ledger minors — why: final reviewer triage + spec §4 — cost if wrong: small polish left for later.
+
+## Deferred minor issues
+- Task 1: minor (deferred): globals.css --font-sans self-reference (carry into Task 4 shell)
+- Task 1: minor (deferred): env Proxy only traps get (Object.keys/spread empty)
+- Task 1: minor (deferred): no test for lazy env export / empty-string-as-unset
+- Task 1: minor (deferred): bitnamilegacy/minio:latest unpinned
+- Task 1: minor (deferred): scaffold boilerplate (page.tsx, svgs, README, "Create Next App" metadata, lang="en") — carry into Task 4
+- Task 2: minor (deferred): setup.ts DROP SCHEMA without guarding that TEST_DATABASE_URL is a test DB
+- Task 2: minor (deferred): db Proxy lacks has/ownKeys traps; any get connects
+- Task 2: minor (deferred): no index on group_member.user_id / task_completion.task_id
+- Task 2: minor (deferred): migrate.ts migrationsFolder cwd-relative (check in Task 14)
+- Task 2: minor (deferred): enum-like text columns have no DB check constraints
+- Task 2: minor (deferred): schema test doesn't assert user/home defaults
+- Task 3: minor (deferred): claim released after user already created (orphan user + reusable token)
+- Task 3: minor (deferred): resetPassword lacks maxPasswordLength check; no test for missing target user
+- Task 3: minor (deferred): concurrency test doesn't assert loser's InviteError code "used"
+- Task 3: minor (deferred): create-admin email check case-sensitive; bootstrap not transactional
+- Task 3: minor (deferred): session.ts casts locale without validation
+- Task 3: minor (deferred): auth.ts comment claims env validation that doesn't happen
+- Task 3: minor (deferred): no RED evidence captured
+- Task 3: minor (deferred): Everyone-group insert inside createUser try → claim released if it throws after user exists (same family as earlier claim-release minor)
+- Task 3: minor (deferred): InviteInputError.field unused
+- Task 4: minor (deferred): invite "invalid" error message misleading for blank name
+- Task 4: minor (deferred): getSessionUser not React.cache'd → 2 getSession calls per request
+- Task 4: minor (deferred): pt-BR "Reguei" vs adjectival siblings ("Regada")
+- Task 4: minor (deferred): French missing nbsp before ?!:
+- Task 4: minor (deferred): session.ts fallback literal "en" instead of DEFAULT_LOCALE
+- Task 5: minor (deferred): DST test doesn't cross the transition; add 01:30Z/22:30Z cases
+- Task 5: minor (deferred): "defaults now" test only checks format
+- Task 5: minor (deferred): invalid tz throws RangeError → validate tz at admin settings boundary (carried to Task 6)
+- Task 5: minor (deferred): Intl formatter rebuilt per call
+- Task 6: minor (deferred): timezone check accepts offsets/lowercase; should canonicalize via supportedValuesOf
+- Task 6: minor (deferred): admin actions swallow errors without logging
+- Task 6: minor (deferred): LIGHT_LEVELS/WINDOW_DIRECTIONS duplicated 3× → db-free constants module
+- Task 6: minor (deferred): empty groups allowed (memberIds no .min(1))
+- Task 6: minor (deferred): touch targets 32/36px (<44px) in admin forms
+- Task 6: minor (deferred): access/admin test gaps (visibleGroupIds ids, non-UUID task id, given_away, error specificity)
+- Task 6: minor (deferred): listPlantsForUser has no ORDER BY
+- Task 6: minor (deferred): no RED run recorded
+- Task 7: minor (deferred): content type trusted from client; add JPEG magic-byte check
+- Task 7: minor (deferred): width/height from client unvalidated (default 0)
+- Task 7: minor (deferred): downscale bitmap.close() not in finally; transparent PNG → black
+- Task 7: minor (deferred): abandoned photos/draft/ objects never cleaned
+- Task 7: minor (deferred): storeDraftPhoto userId unused
+- Task 7: minor (deferred): signed URLs use S3_ENDPOINT — production needs a browser-reachable endpoint (check in Task 14 deploy docs)
+- Task 8: minor (deferred): failure update lacks status<>'ready' guard (concurrent overwrite)
+- Task 8: minor (deferred): trimIdentify doesn't sort by confidence; isPlant:false with candidates not normalized
+- Task 8: minor (deferred): NOT_A_PLANT conflates refusal and non-plant (partly addressed by R14 flag)
+- Task 8: minor (deferred): system prompts likely below cache minimum → caching no-op
+- Task 8: minor (deferred): transport/BudgetExceeded errors treated as model failure (burns attempt)
+- Task 8: minor (deferred): usage cost uses requested model pricing even if fallback model served
+- Task 8: minor (deferred): no unit test for callStructured branches; "mid-stream refusal" test duplicates pre-output case
+- Task 8: minor (deferred): unrelated formatting churn in care-profile.test.ts
+- Task 9: minor (deferred, final review should triage — concurrency hardening): next computed from pre-tx snapshot; UPDATE checks client expectedVersion not task.version → return already_done early when task.version !== expectedVersion
+- Task 9: minor (deferred, final review should triage): spawned-repot upsert doesn't bump version
+- Task 9: minor (deferred): photo outcome accepted but nextDue throws plain Error (500)
+- Task 9: minor (deferred): scheduleProfileOf silently falls back on corrupt profile (no log)
+- Task 9: minor (deferred): latest completion ordered by completedAt only (no tie-breaker)
+- Task 9: minor (deferred): test gaps (repot dueOn assertion weak; inactive no-completion path; still_moist race)
+- Task 9: minor (deferred): override beats learned on done (documented)
+- Task 9: minor (deferred): no RED run captured
+- Task 10: minor (deferred): Focus-5 test asserts any error, should match notFound digest; input tests should assert CreatePlantInputError
+- Task 10: minor (deferred): persona/potSizeCm/justBought/spotId/name lengths not validated (zod)
+- Task 10: minor (deferred): draft key not tied to uploader; photo.objectKey not unique
+- Task 10: minor (deferred): label photo can become cover if added first
+- Task 10: minor (deferred): new photo overwrites user-edited name/pot size
+- Task 10: minor (deferred): low confidence not flagged
+- Task 10: minor (deferred): no-group user gets silently disabled Save; isPlant true + 0 candidates shows "not a plant"; jpegSize no unit test
+- Task 10: minor (deferred): assertDraftKeys throws plain Error (was CreatePlantInputError)
+- Task 11: minor (deferred): no RED run recorded
+- Task 11: minor (deferred): given_away not in queries test fixture
+- Task 11: minor (deferred): AI banner NaN/Infinity% when cap = 0
+- Task 11: minor (deferred): reviving a dead plant floods home with old overdue tasks
+- Task 11: minor (deferred): inArray for single spot id; coverUrls lives in tasks/queries.ts
+- Task 11: minor (deferred): no fallback to text.en if locale text missing
+- Task 11: minor (deferred): edit page and /plants list have no UI tests
+- Task 11: minor (deferred): e2e output has "[browser] TypeError: Load failed" noise from add-plant fallback test
+- Task 12: minor (deferred): webcalUrl helper unused, regex duplicated inline
+- Task 12: minor (deferred): clipboard.writeText rejection unhandled
+- Task 12: minor (deferred): LIST_AND dead indirection
+- Task 12: minor (deferred): settings forms reuse settings.admin.error key
+- Task 12: minor (deferred): given_away not separately tested in calendar route
+- Task 13: minor (deferred): overlapping ticks can double-send (no claim) — R17's mark-on-evaluate + conditional UPDATE would close it
+- Task 13: minor (deferred): permanently failing subscriptions retried (now bounded by R17 once-per-day)
+- Task 13: minor (deferred): push toggle trusts browser subscription only; button hangs in dev (SW disabled)
+- Task 13: minor (deferred): SW: non-JSON payload throws / no-data shows nothing; navigate() on uncontrolled client; misleading "never stale" comment
+- Task 13: minor (deferred): /offline precache revision = package version
+- Task 13: minor (deferred): digest body " +N" and ", " not localized
+- Task 13: minor (deferred): homeSettings is the 5th copy of the home-row read
+- Task 13: minor (deferred): dev VAPID keypair committed — add "dev only" comment; production must generate its own (deploy docs)
+- Task 13: minor (deferred): test nits; digestsSent counts pushes not users
+- Task 13: minor (deferred): send that throws is not retried that day (by R17 design)
+- Task 14: minor (deferred): CMD leaves sh as PID 1 → use exec node server.js
+- Task 14: minor (deferred): .env.docker.example still says --network host / localhost
+- Task 14: minor (deferred): photo upload path (sharp at runtime?) not exercised in the container
+- Task 14: minor (deferred): no Dockerfile HEALTHCHECK (Coolify config documented)
+- Final: minor (parked): ai-smoke reuses ready/exhausted species (use retryCareProfile for a forced live attempt); sums all ai_usage rows; sends image unscaled as image/jpeg; signOut result unchecked
