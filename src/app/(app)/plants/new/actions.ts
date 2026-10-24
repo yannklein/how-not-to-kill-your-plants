@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { ensureCareProfile, getOrCreateSpecies } from "@/lib/ai/care-profile";
 import { identifyDraftPhotos } from "@/lib/ai/identify-drafts";
 import type { IdentifyOutcome } from "@/lib/ai/identify";
+import { runFeedTextFill } from "@/lib/feed/cron";
 import { requireUser } from "@/lib/session";
 import { createPlantWithTasks, type CreatePlantInput } from "@/lib/tasks/create";
 
@@ -29,6 +30,7 @@ export async function identifyAction(photoKeys: string[]): Promise<IdentifyOutco
 export async function createPlantAction(input: CreatePlantInput): Promise<{ plantId: string }> {
   const user = await requireUser();
   const created = await createPlantWithTasks(user.id, input);
+  after(() => runFeedTextFill().catch((err) => console.error("feed text fill failed", err)));
   revalidatePath("/");
   revalidatePath("/plants");
   return created;

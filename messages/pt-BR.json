@@ -134,7 +134,8 @@
       "yes": "Sim",
       "no": "Não",
       "hint": "Raízes saindo pelos furos de drenagem?"
-    }
+    },
+    "takePhoto": "Tirar foto"
   },
   "settings": {
     "title": "Ajustes",
@@ -257,6 +258,20 @@
       "mood": "{to, select, sulking {😤 Estou meio emburrada…} other {😊 Já estou melhor}}",
       "season": "{growing, select, true {🌞 Época de crescer! Hora de acordar} other {😴 Entrando no modo inverno, me regue menos}}",
       "first": "🌿 Oi! Acabei de chegar."
+    },
+    "title": "Notícias das plantas",
+    "seeAll": "Ver tudo",
+    "loadMore": "Ver mais",
+    "empty": "Ainda sem novidades. Elas chegam com a primeira folha nova 🌱",
+    "anythingNew": "Alguma novidade?",
+    "nothingNew": "Nada de novo",
+    "uploading": "Salvando a foto…",
+    "mood": {
+      "proud": "Orgulhosa",
+      "sulking": "Emburrada",
+      "needy": "Com sede",
+      "sleepy": "Sonolenta",
+      "happy": "Feliz"
     }
   }
 }

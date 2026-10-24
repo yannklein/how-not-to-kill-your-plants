@@ -14,6 +14,8 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  // The e2e server builds into its own folder so it can run next to a developer's `next dev`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   output: "standalone",
   cacheComponents: false,
   experimental: {

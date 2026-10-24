@@ -134,7 +134,8 @@
       "yes": "Oui",
       "no": "Non",
       "hint": "Des racines sortent par les trous de drainage ?"
-    }
+    },
+    "takePhoto": "Prendre une photo"
   },
   "settings": {
     "title": "Réglages",
@@ -257,6 +258,20 @@
       "mood": "{to, select, sulking {😤 Je boude un peu…} other {😊 Ça va mieux maintenant}}",
       "season": "{growing, select, true {🌞 C'est la saison de croissance ! Je me réveille} other {😴 Je passe en mode hiver, arrosez-moi moins}}",
       "first": "🌿 Bonjour ! Je viens d'emménager."
+    },
+    "title": "Nouvelles des plantes",
+    "seeAll": "Tout voir",
+    "loadMore": "Voir plus",
+    "empty": "Pas encore de nouvelles. Elles arriveront avec la première nouvelle feuille 🌱",
+    "anythingNew": "Quoi de neuf ?",
+    "nothingNew": "Rien de nouveau",
+    "uploading": "Enregistrement de la photo…",
+    "mood": {
+      "proud": "Fière",
+      "sulking": "Boudeuse",
+      "needy": "Assoiffée",
+      "sleepy": "Endormie",
+      "happy": "Heureuse"
     }
   }
 }

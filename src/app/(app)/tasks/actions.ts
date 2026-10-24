@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getTranslations } from "next-intl/server";
 import type { TaskOutcome } from "@/lib/care/types";
+import { runFeedTextFill } from "@/lib/feed/cron";
 import { requireUser } from "@/lib/session";
 import { completeTask, InvalidOutcomeError } from "@/lib/tasks/complete";
 
@@ -21,7 +23,10 @@ export async function completeTaskAction(
   try {
     const result = await completeTask({ userId: user.id, taskId, expectedVersion, outcome });
     revalidatePath("/");
-    if (result.status === "ok") return { status: "ok" };
+    if (result.status === "ok") {
+      after(() => runFeedTextFill().catch((err) => console.error("feed text fill failed", err)));
+      return { status: "ok" };
+    }
     const name = result.by.name.trim();
     return {
       status: "already_done",

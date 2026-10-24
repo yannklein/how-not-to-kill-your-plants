@@ -23,6 +23,7 @@ export const E2E_ENV = {
   BETTER_AUTH_URL: E2E_BASE_URL,
   APP_URL: E2E_BASE_URL,
   AI_MODE: "mock",
+  NEXT_DIST_DIR: ".next-e2e",
   S3_ENDPOINT: "http://localhost:9000",
   S3_BUCKET: "plants",
   S3_ACCESS_KEY: "minio",

@@ -7,14 +7,17 @@ import { listPlantsForUser } from "@/lib/access";
 import { requireUser } from "@/lib/session";
 import { speciesLabel } from "@/lib/plants/display";
 import { coverUrls } from "@/lib/tasks/queries";
+import { currentMoods } from "@/lib/feed/queries";
+import { PlantAvatar } from "@/components/plant-avatar";
 
 export default async function PlantsPage() {
-  const [user, t] = await Promise.all([requireUser(), getTranslations("plants")]);
+  const [user, t, tf] = await Promise.all([requireUser(), getTranslations("plants"), getTranslations("feed")]);
   const plants = (await listPlantsForUser(user.id)).sort((a, b) => a.name.localeCompare(b.name));
   const speciesIds = [...new Set(plants.flatMap((p) => (p.speciesId ? [p.speciesId] : [])))];
-  const [speciesRows, covers] = await Promise.all([
+  const [speciesRows, covers, moods] = await Promise.all([
     speciesIds.length ? db.select().from(species).where(inArray(species.id, speciesIds)) : [],
     coverUrls(plants),
+    currentMoods(plants.map((p) => p.id)),
   ]);
   const speciesById = new Map(speciesRows.map((s) => [s.id, s]));
 
@@ -34,12 +37,11 @@ export default async function PlantsPage() {
                   href={`/plants/${p.id}`}
                   className="flex items-center gap-3 rounded-xl border bg-card p-3"
                 >
-                  <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                    {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cover} alt="" className="size-full object-cover" />
-                    ) : null}
-                  </div>
+                  <PlantAvatar
+                    coverUrl={cover ?? null}
+                    mood={moods.get(p.id) ?? "happy"}
+                    moodLabel={tf(`mood.${moods.get(p.id) ?? "happy"}`)}
+                  />
                   <div className="min-w-0">
                     <p className="truncate font-medium">{p.name}</p>
                     {sp ? (

@@ -134,7 +134,8 @@
       "yes": "Yes",
       "no": "No",
       "hint": "Roots coming out of the drainage holes?"
-    }
+    },
+    "takePhoto": "Take photo"
   },
   "settings": {
     "title": "Settings",
@@ -257,6 +258,20 @@
       "mood": "{to, select, sulking {😤 I'm sulking a little…} other {😊 Feeling better now}}",
       "season": "{growing, select, true {🌞 Growing season! Time to wake up} other {😴 Going into winter mode, water me less}}",
       "first": "🌿 Hello! I just moved in."
+    },
+    "title": "Plant news",
+    "seeAll": "See all",
+    "loadMore": "Load more",
+    "empty": "No news yet. It'll come with the first new leaf 🌱",
+    "anythingNew": "Anything new?",
+    "nothingNew": "Nothing new",
+    "uploading": "Saving the photo…",
+    "mood": {
+      "proud": "Proud",
+      "sulking": "Sulking",
+      "needy": "Thirsty",
+      "sleepy": "Sleepy",
+      "happy": "Happy"
     }
   }
 }

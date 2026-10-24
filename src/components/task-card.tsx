@@ -7,17 +7,20 @@ import { toast } from "sonner";
 import { completeTaskAction } from "@/app/(app)/tasks/actions";
 import { Button } from "@/components/ui/button";
 import type { TaskOutcome, TaskType } from "@/lib/care/types";
+import type { Mood } from "@/lib/feed/types";
+import { PhotoCapture } from "./photo-capture";
+import { PlantAvatar } from "./plant-avatar";
 
 export type TaskRowData = { id: string; type: TaskType; version: number; overdueDays: number };
 
 export type TaskCardProps = {
   tasks: TaskRowData[];
-  plant: { id: string; name: string; coverUrl: string | null };
+  plant: { id: string; name: string; coverUrl: string | null; mood: Mood };
 };
 
 type Choice = { outcome: TaskOutcome; label: string; primary?: boolean };
 
-function TaskRow({ task }: { task: TaskRowData }) {
+function TaskRow({ task, plantId }: { task: TaskRowData; plantId: string }) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
@@ -59,7 +62,8 @@ function TaskRow({ task }: { task: TaskRowData }) {
         </p>
       ) : null}
       <div className="flex gap-2">
-        {choices.map((c) => (
+        {task.type === "photo" ? <PhotoCapture plantId={plantId} label={t("tasks.takePhoto")} /> : null}
+        {(task.type === "photo" ? choices.filter((c) => c.outcome === "skipped") : choices).map((c) => (
           <Button
             key={c.outcome}
             type="button"
@@ -87,12 +91,7 @@ export function TaskCard({ tasks, plant }: TaskCardProps) {
       className="flex flex-col gap-3 rounded-xl border bg-card p-3 text-card-foreground"
     >
       <div className="flex items-center gap-3">
-        <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-          {plant.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={plant.coverUrl} alt="" className="size-full object-cover" />
-          ) : null}
-        </div>
+        <PlantAvatar coverUrl={plant.coverUrl} mood={plant.mood} moodLabel={t(`feed.mood.${plant.mood}`)} />
         <Link href={`/plants/${plant.id}`} className="block min-w-0 flex-1 truncate font-medium">
           {plant.name}
         </Link>
@@ -108,7 +107,7 @@ export function TaskCard({ tasks, plant }: TaskCardProps) {
       </div>
       <ul className="flex flex-col gap-3">
         {tasks.map((task) => (
-          <TaskRow key={task.id} task={task} />
+          <TaskRow key={task.id} task={task} plantId={plant.id} />
         ))}
       </ul>
     </li>
