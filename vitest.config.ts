@@ -24,6 +24,9 @@ export default defineConfig({
           fileParallelism: false,
           testTimeout: 20000,
           env: {
+            BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-123",
+            BETTER_AUTH_URL: "http://localhost:3000",
+            APP_URL: "http://localhost:3000",
             DATABASE_URL:
               process.env.TEST_DATABASE_URL ??
               "postgres://plants:plants@localhost:5433/plants_test",
