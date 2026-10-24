@@ -1,11 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/locales";
+import { authClient } from "@/lib/auth-client";
 import { regenerateCalendarToken, setLocale, setPushTime, type ActionResult } from "./actions";
 
 const LANGUAGES: { value: Locale; label: string }[] = [
@@ -123,5 +125,23 @@ export function CalendarSection({ initialUrl }: { initialUrl: string }) {
         </p>
       )}
     </div>
+  );
+}
+
+export function SignOutButton() {
+  const t = useTranslations("settings");
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  function signOut() {
+    start(async () => {
+      await authClient.signOut();
+      router.push("/login");
+      router.refresh();
+    });
+  }
+  return (
+    <Button type="button" variant="outline" className="h-11 text-base" disabled={pending} onClick={signOut}>
+      {t("signOut")}
+    </Button>
   );
 }

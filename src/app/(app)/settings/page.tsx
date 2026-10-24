@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calendarUrl, getOrCreateCalendarToken } from "@/lib/calendar/tokens";
 import { env } from "@/lib/env";
 import { requireUser } from "@/lib/session";
-import { CalendarSection, LanguageForm, PushTimeForm } from "./settings-forms";
+import { CalendarSection, LanguageForm, PushTimeForm, SignOutButton } from "./settings-forms";
 
 export default async function SettingsPage() {
   const me = await requireUser();
@@ -43,6 +43,8 @@ export default async function SettingsPage() {
           <CalendarSection initialUrl={url} />
         </CardContent>
       </Card>
+
+      <SignOutButton />
 
       {me.role === "admin" && (
         <Link href="/settings/admin" className="text-base font-medium underline underline-offset-4">

@@ -27,15 +27,18 @@ export default async function HomePage() {
         <p className="rounded-xl bg-muted p-4 text-center text-muted-foreground">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {groups.flatMap((g) =>
-            g.tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={{ id: task.id, type: task.type, version: task.version, overdueDays: task.overdueDays }}
-                plant={{ id: g.plant.id, name: g.plant.name, coverUrl: g.plant.coverUrl }}
-              />
-            )),
-          )}
+          {groups.map((g) => (
+            <TaskCard
+              key={g.plant.id}
+              tasks={g.tasks.map((task) => ({
+                id: task.id,
+                type: task.type,
+                version: task.version,
+                overdueDays: task.overdueDays,
+              }))}
+              plant={{ id: g.plant.id, name: g.plant.name, coverUrl: g.plant.coverUrl }}
+            />
+          ))}
         </ul>
       )}
 

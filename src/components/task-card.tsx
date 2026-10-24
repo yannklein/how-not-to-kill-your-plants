@@ -8,14 +8,16 @@ import { completeTaskAction } from "@/app/(app)/tasks/actions";
 import { Button } from "@/components/ui/button";
 import type { TaskOutcome, TaskType } from "@/lib/care/types";
 
+export type TaskRowData = { id: string; type: TaskType; version: number; overdueDays: number };
+
 export type TaskCardProps = {
-  task: { id: string; type: TaskType; version: number; overdueDays: number };
+  tasks: TaskRowData[];
   plant: { id: string; name: string; coverUrl: string | null };
 };
 
 type Choice = { outcome: TaskOutcome; label: string; primary?: boolean };
 
-export function TaskCard({ task, plant }: TaskCardProps) {
+function TaskRow({ task }: { task: TaskRowData }) {
   const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
@@ -48,33 +50,8 @@ export function TaskCard({ task, plant }: TaskCardProps) {
   }
 
   return (
-    <li
-      data-testid="task-card"
-      className="flex flex-col gap-3 rounded-xl border bg-card p-3 text-card-foreground"
-    >
-      <div className="flex items-center gap-3">
-        <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-          {plant.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={plant.coverUrl} alt="" className="size-full object-cover" />
-          ) : null}
-        </div>
-        <div className="min-w-0 flex-1">
-          <Link href={`/plants/${plant.id}`} className="block truncate font-medium">
-            {plant.name}
-          </Link>
-          <p className="text-sm text-muted-foreground">{t(`care.type.${task.type}`)}</p>
-        </div>
-        <span
-          className={
-            task.overdueDays > 0
-              ? "shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive"
-              : "shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
-          }
-        >
-          {task.overdueDays > 0 ? t("tasks.overdueBy", { count: task.overdueDays }) : t("home.dueToday")}
-        </span>
-      </div>
+    <li data-testid="task-row" className="flex flex-col gap-2">
+      <p className="text-sm font-medium text-muted-foreground">{t(`care.type.${task.type}`)}</p>
       {task.type === "settle_check" ? (
         <p className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{t("tasks.rootbound.label")}</span>{" "}
@@ -95,6 +72,45 @@ export function TaskCard({ task, plant }: TaskCardProps) {
           </Button>
         ))}
       </div>
+    </li>
+  );
+}
+
+/** One card per plant: thumbnail and name once, then each due task as a row with its one-tap buttons. */
+export function TaskCard({ tasks, plant }: TaskCardProps) {
+  const t = useTranslations();
+  const overdueDays = Math.max(0, ...tasks.map((x) => x.overdueDays));
+
+  return (
+    <li
+      data-testid="task-card"
+      className="flex flex-col gap-3 rounded-xl border bg-card p-3 text-card-foreground"
+    >
+      <div className="flex items-center gap-3">
+        <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
+          {plant.coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={plant.coverUrl} alt="" className="size-full object-cover" />
+          ) : null}
+        </div>
+        <Link href={`/plants/${plant.id}`} className="block min-w-0 flex-1 truncate font-medium">
+          {plant.name}
+        </Link>
+        <span
+          className={
+            overdueDays > 0
+              ? "shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive"
+              : "shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
+          }
+        >
+          {overdueDays > 0 ? t("tasks.overdueBy", { count: overdueDays }) : t("home.dueToday")}
+        </span>
+      </div>
+      <ul className="flex flex-col gap-3">
+        {tasks.map((task) => (
+          <TaskRow key={task.id} task={task} />
+        ))}
+      </ul>
     </li>
   );
 }

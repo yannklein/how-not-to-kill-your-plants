@@ -5,7 +5,7 @@ import { loginAs } from "./helpers";
 import { E2E_DATABASE_URL, GROUPS } from "./seed-data";
 
 // Seeds a plant in "Everyone" with a water task due today, directly in the e2e database.
-async function seedWaterTask(plantName: string): Promise<void> {
+async function seedWaterTask(plantName: string, secondTask = false): Promise<void> {
   const sql = postgres(E2E_DATABASE_URL, { max: 1, onnotice: () => {} });
   try {
     const [g] = await sql`select id from "group" where name = ${GROUPS.ALL}`;
@@ -15,6 +15,9 @@ async function seedWaterTask(plantName: string): Promise<void> {
       insert into plant (group_id, name, acquired_on) values (${g.id}, ${plantName}, ${today})
       returning id`;
     await sql`insert into care_task (plant_id, type, due_on) values (${p.id}, 'water', ${today})`;
+    if (secondTask) {
+      await sql`insert into care_task (plant_id, type, due_on) values (${p.id}, 'rotate', ${today})`;
+    }
   } finally {
     await sql.end();
   }
@@ -50,4 +53,15 @@ test("first tick clears the task for everyone; a stale page sees who did it", as
     await ctxY.close();
     await ctxA.close();
   }
+});
+
+test("a plant with several due tasks shows as one card with one row per task", async ({ page }) => {
+  const plantName = `Grouped palm ${Date.now()}`;
+  await seedWaterTask(plantName, true);
+  await loginAs(page, "Y");
+
+  const card = page.getByTestId("task-card").filter({ hasText: plantName });
+  await expect(card).toHaveCount(1);
+  await expect(card.getByTestId("task-row")).toHaveCount(2);
+  await expect(card.getByText(plantName)).toHaveCount(1);
 });
