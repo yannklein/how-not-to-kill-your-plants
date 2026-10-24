@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/calendar/[token]/route";
 import { calendarToken, careTask, group, groupMember, home, plant, user } from "@/db/schema";
 import { getOrCreateCalendarToken, regenerateCalendarToken } from "@/lib/calendar/tokens";
@@ -50,6 +50,16 @@ describe("calendar feed", () => {
     await setLocale("u1", "fr");
     const body = await (await call(await getOrCreateCalendarToken("u1"))).text();
     expect(body).toContain("Arroser Alive");
+  });
+
+  it("dates the event by the home timezone, not UTC (00:30 Madrid)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-10-24T22:30:00Z") });
+    try {
+      const body = await (await call(await getOrCreateCalendarToken("u1"))).text();
+      expect(body).toContain("DTSTART;VALUE=DATE:20261025");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("regenerating invalidates the old token", async () => {

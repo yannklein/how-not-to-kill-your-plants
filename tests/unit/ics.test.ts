@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { buildIcs } from "@/lib/calendar/ics";
 
 const base = {
@@ -49,5 +49,22 @@ describe("buildIcs", () => {
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1);
     expect(ics).toContain("Water A\\, B & C");
     expect(ics).toContain("DESCRIPTION:Water A\\nWater B\\nWater C");
+  });
+
+  describe("under a negative-offset process timezone", () => {
+    const original = process.env.TZ;
+    afterEach(() => {
+      if (original === undefined) delete process.env.TZ;
+      else process.env.TZ = original;
+    });
+
+    it.each(["America/Los_Angeles", "America/Sao_Paulo"])("keeps the date under TZ=%s", (zone) => {
+      process.env.TZ = zone;
+      // Guard: the runtime really switched timezone (local midnight is not UTC midnight).
+      expect(new Date("2026-10-25T00:00:00Z").getDate()).toBe(24);
+      const ics = unfold(buildIcs({ ...base, locale: "en" }));
+      expect(ics).toContain("DTSTART;VALUE=DATE:20261025");
+      expect(ics).not.toContain("DTSTART;VALUE=DATE:20261024");
+    });
   });
 });

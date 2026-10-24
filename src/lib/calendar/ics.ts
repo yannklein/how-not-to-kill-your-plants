@@ -37,7 +37,7 @@ export function buildIcs(input: {
   appUrl: string;
   tasks: IcsTask[];
 }): string {
-  const { userId, locale, today, tz, appUrl } = input;
+  const { userId, locale, today, appUrl } = input;
   const t = createTranslator({ locale, messages: MESSAGES[locale] });
   const verb = (type: TaskType) => t(`care.verb.${type}`);
   const horizon = addDays(today, HORIZON_DAYS);
@@ -49,7 +49,8 @@ export function buildIcs(input: {
     byDay.set(day, [...(byDay.get(day) ?? []), task]);
   }
 
-  const cal = ical({ name: t("calendar.name"), method: ICalCalendarMethod.PUBLISH, ttl: 60 * 60, timezone: tz });
+  // No `timezone` option: all-day events are floating dates, and a TZ makes the library shift DTSTART by the server offset.
+  const cal = ical({ name: t("calendar.name"), method: ICalCalendarMethod.PUBLISH, ttl: 60 * 60 });
   for (const day of [...byDay.keys()].sort()) {
     const tasks = byDay.get(day)!;
     const ordered = TYPE_ORDER.flatMap((type) => tasks.filter((x) => x.type === type));
