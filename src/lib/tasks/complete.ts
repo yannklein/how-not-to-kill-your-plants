@@ -2,6 +2,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { careTask, home, species, taskCompletion, user } from "@/db/schema";
 import { getTaskForUser } from "@/lib/access";
+import { logMoment, recordThanks } from "@/lib/feed/events";
 import { CareProfile } from "@/lib/ai/schemas";
 import { nextDue, type ScheduleProfile } from "@/lib/care/schedule";
 import type { TaskOutcome, TaskType } from "@/lib/care/types";
@@ -122,7 +123,7 @@ export async function completeTask(input: {
     overrideDays: task.plant.waterIntervalOverrideDays,
   });
 
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx): Promise<CompleteResult> => {
     const [updated] = await tx
       .update(careTask)
       .set({
@@ -164,4 +165,20 @@ export async function completeTask(input: {
 
     return { status: "ok", nextDueOn: next.dueOn };
   });
+
+  if (result.status === "ok") await postAboutCare(userId, task.plantId, task.type, outcome);
+  return result;
+}
+
+/** One post per completed care action; a feed problem never fails the completion. */
+async function postAboutCare(userId: string, plantId: string, taskType: TaskType, outcome: TaskOutcome) {
+  try {
+    if (taskType === "repot" && outcome === "done") {
+      await logMoment(userId, plantId, "repotted", null);
+    } else {
+      await recordThanks({ plantId, userId, taskType, outcome });
+    }
+  } catch (err) {
+    console.error(`feed: could not post about ${taskType} on plant ${plantId}`, err);
+  }
 }

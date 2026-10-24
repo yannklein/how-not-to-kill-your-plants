@@ -6,6 +6,7 @@ import { visibleGroupIds } from "@/lib/access";
 import { ensureCareProfile, getOrCreateSpecies } from "@/lib/ai/care-profile";
 import { CareProfile } from "@/lib/ai/schemas";
 import { initialTasks } from "@/lib/care/schedule";
+import { recordFirst } from "@/lib/feed/events";
 import { jpegSize } from "@/lib/image/jpeg-size";
 import { assertDraftKeys } from "@/lib/photos";
 import { getObjectBytes } from "@/lib/storage";
@@ -131,5 +132,10 @@ export async function createPlantWithTasks(
     );
     return created.id;
   });
+  try {
+    await recordFirst(plantId, userId);
+  } catch (err) {
+    console.error(`feed: could not introduce plant ${plantId}`, err);
+  }
   return { plantId };
 }

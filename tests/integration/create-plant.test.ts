@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { careTask, group, groupMember, home, photo, plant, species, user } from "@/db/schema";
+import { careTask, feedEvent, group, groupMember, home, photo, plant, species, user } from "@/db/schema";
 import { mockIdentify } from "@/lib/ai/mock";
 import { storeDraftPhoto } from "@/lib/photos";
 import { createPlantWithTasks } from "@/lib/tasks/create";
@@ -116,5 +116,12 @@ describe("createPlantWithTasks (AI_MODE=mock)", () => {
     );
     const [p] = await db.select().from(plant).where(eq(plant.id, plantId));
     expect(p.coverPhotoId).toBe(photos.find((x) => x.kind === "plant")!.id);
+  });
+
+  it("introduces the new plant with exactly one first post", async () => {
+    const { plantId } = await createPlantWithTasks(Y, input());
+    const events = await db.select().from(feedEvent).where(eq(feedEvent.plantId, plantId));
+    expect(events.map((e) => e.type)).toEqual(["first"]);
+    expect(events[0].payload).toMatchObject({ userName: "Yann" });
   });
 });
