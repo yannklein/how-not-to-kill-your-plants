@@ -1,13 +1,14 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { isLocale, type Locale } from "@/i18n/locales";
 
 export type SessionUser = {
   id: string;
   name: string;
   email: string;
   role: "admin" | "user";
-  locale: "en" | "fr" | "pt-BR";
+  locale: Locale;
   pushTime: string;
 };
 
@@ -24,7 +25,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     name: u.name,
     email: u.email,
     role: u.role === "admin" ? "admin" : "user",
-    locale: (u.locale as SessionUser["locale"]) ?? "en",
+    locale: isLocale(u.locale) ? u.locale : "en",
     pushTime: u.pushTime ?? "08:30",
   };
 }

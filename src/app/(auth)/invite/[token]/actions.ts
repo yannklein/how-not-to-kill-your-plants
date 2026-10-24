@@ -2,13 +2,8 @@
 
 import { acceptInvite, InviteError, InviteInputError } from "@/lib/invites";
 
-export type AcceptInviteResult = { ok: true } | { ok: false; error: string };
-
-const MESSAGES: Record<InviteError["code"], string> = {
-  expired: "This invite has expired. Ask for a new one.",
-  used: "This invite has already been used.",
-  not_found: "This invite link is not valid.",
-};
+export type AcceptInviteError = InviteError["code"] | "invalid" | "generic";
+export type AcceptInviteResult = { ok: true } | { ok: false; error: AcceptInviteError };
 
 export async function acceptInviteAction(
   token: string,
@@ -18,8 +13,8 @@ export async function acceptInviteAction(
     await acceptInvite(token, input);
     return { ok: true };
   } catch (err) {
-    if (err instanceof InviteInputError) return { ok: false, error: err.message };
-    if (err instanceof InviteError) return { ok: false, error: MESSAGES[err.code] };
-    return { ok: false, error: "Could not create the account. Check your details." };
+    if (err instanceof InviteInputError) return { ok: false, error: "invalid" };
+    if (err instanceof InviteError) return { ok: false, error: err.code };
+    return { ok: false, error: "generic" };
   }
 }

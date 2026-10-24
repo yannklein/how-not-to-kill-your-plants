@@ -1,0 +1,120 @@
+{
+  "common": {
+    "appName": "How Not To Kill Your Plants",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "loading": "Chargement…",
+    "error": "Une erreur s'est produite. Veuillez réessayer.",
+    "nav": {
+      "home": "Accueil",
+      "plants": "Plantes",
+      "add": "Ajouter une plante",
+      "settings": "Réglages",
+      "label": "Navigation principale"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "error": "E-mail ou mot de passe incorrect."
+    },
+    "invite": {
+      "title": "Créez votre compte",
+      "name": "Nom",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "submit": "Créer le compte",
+      "submitting": "Création…",
+      "errors": {
+        "expired": "Cette invitation a expiré. Demandez-en une nouvelle.",
+        "used": "Cette invitation a déjà été utilisée.",
+        "not_found": "Ce lien d'invitation n'est pas valide.",
+        "invalid": "Vérifiez vos informations : le mot de passe doit contenir au moins 8 caractères.",
+        "generic": "Impossible de créer le compte. Vérifiez vos informations."
+      }
+    }
+  },
+  "home": {
+    "title": "Aujourd'hui",
+    "empty": "Rien à faire aujourd'hui. Vos plantes sont heureuses.",
+    "overdue": "En retard",
+    "dueToday": "À faire aujourd'hui"
+  },
+  "plants": {
+    "title": "Plantes",
+    "empty": "Pas encore de plantes. Ajoutez la première !",
+    "location": "Emplacement",
+    "acquired": "Acquise le {date}"
+  },
+  "addPlant": {
+    "title": "Ajouter une plante",
+    "takePhoto": "Prendre une photo",
+    "choosePhoto": "Choisir une photo",
+    "identifying": "Identification de votre plante…",
+    "justBought": "Tout juste achetée ?",
+    "yes": "Oui",
+    "no": "Non",
+    "confirmSave": "C'est bon, l'ajouter"
+  },
+  "tasks": {
+    "outcome": {
+      "watered": "Arrosée",
+      "stillMoist": "Encore humide",
+      "skip": "Passer"
+    },
+    "done": "Terminé",
+    "completedBy": "Fait par {name}",
+    "dueOn": "Prévu le {date}",
+    "overdueBy": "{count, plural, one {# jour de retard} other {# jours de retard}}"
+  },
+  "settings": {
+    "title": "Réglages",
+    "language": "Langue",
+    "signOut": "Se déconnecter",
+    "notifications": "Notifications",
+    "pushTime": "Heure du rappel du matin"
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "feedUrl": "Votre lien de calendrier",
+    "regenerate": "Générer un nouveau lien",
+    "regenerateWarning": "L'ancien lien cessera de fonctionner.",
+    "copy": "Copier le lien",
+    "eventTitle": "{count, plural, one {# tâche pour les plantes} other {# tâches pour les plantes}}"
+  },
+  "push": {
+    "enable": "Activer les rappels",
+    "disable": "Désactiver les rappels",
+    "denied": "Les notifications sont bloquées dans les réglages de votre navigateur.",
+    "digestTitle": "Vos plantes ont besoin de vous aujourd'hui",
+    "digestBody": "{count, plural, one {# tâche à faire} other {# tâches à faire}}."
+  },
+  "care": {
+    "type": {
+      "water": "Arrosage",
+      "settle_check": "Contrôle de reprise",
+      "repot": "Rempotage",
+      "fertilize": "Fertilisation",
+      "rotate": "Rotation",
+      "dust": "Dépoussiérage",
+      "mist": "Brumisation",
+      "photo": "Photo de suivi"
+    },
+    "verb": {
+      "water": "Arroser",
+      "settle_check": "Vérifier la reprise de",
+      "repot": "Rempoter",
+      "fertilize": "Fertiliser",
+      "rotate": "Tourner",
+      "dust": "Dépoussiérer",
+      "mist": "Brumiser",
+      "photo": "Photographier"
+    }
+  }
+}

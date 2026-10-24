@@ -1,0 +1,120 @@
+{
+  "common": {
+    "appName": "How Not To Kill Your Plants",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "loading": "Loading…",
+    "error": "Something went wrong. Please try again.",
+    "nav": {
+      "home": "Home",
+      "plants": "Plants",
+      "add": "Add a plant",
+      "settings": "Settings",
+      "label": "Main navigation"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "error": "Wrong email or password."
+    },
+    "invite": {
+      "title": "Create your account",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "errors": {
+        "expired": "This invite has expired. Ask for a new one.",
+        "used": "This invite has already been used.",
+        "not_found": "This invite link is not valid.",
+        "invalid": "Check your details: the password needs at least 8 characters.",
+        "generic": "Could not create the account. Check your details."
+      }
+    }
+  },
+  "home": {
+    "title": "Today",
+    "empty": "Nothing to do today. Your plants are happy.",
+    "overdue": "Overdue",
+    "dueToday": "Due today"
+  },
+  "plants": {
+    "title": "Plants",
+    "empty": "No plants yet. Add your first one!",
+    "location": "Location",
+    "acquired": "Acquired {date}"
+  },
+  "addPlant": {
+    "title": "Add a plant",
+    "takePhoto": "Take a photo",
+    "choosePhoto": "Choose a photo",
+    "identifying": "Identifying your plant…",
+    "justBought": "Just bought?",
+    "yes": "Yes",
+    "no": "No",
+    "confirmSave": "Looks right, add it"
+  },
+  "tasks": {
+    "outcome": {
+      "watered": "Watered",
+      "stillMoist": "Still moist",
+      "skip": "Skip"
+    },
+    "done": "Done",
+    "completedBy": "Done by {name}",
+    "dueOn": "Due {date}",
+    "overdueBy": "{count, plural, one {# day overdue} other {# days overdue}}"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "signOut": "Sign out",
+    "notifications": "Notifications",
+    "pushTime": "Morning reminder time"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "feedUrl": "Your calendar link",
+    "regenerate": "Generate a new link",
+    "regenerateWarning": "The old link will stop working.",
+    "copy": "Copy link",
+    "eventTitle": "{count, plural, one {# plant task} other {# plant tasks}}"
+  },
+  "push": {
+    "enable": "Turn on reminders",
+    "disable": "Turn off reminders",
+    "denied": "Notifications are blocked in your browser settings.",
+    "digestTitle": "Plants need you today",
+    "digestBody": "{count, plural, one {# task is due} other {# tasks are due}}."
+  },
+  "care": {
+    "type": {
+      "water": "Watering",
+      "settle_check": "Settling-in check",
+      "repot": "Repotting",
+      "fertilize": "Fertilizing",
+      "rotate": "Rotating",
+      "dust": "Dusting",
+      "mist": "Misting",
+      "photo": "Progress photo"
+    },
+    "verb": {
+      "water": "Water",
+      "settle_check": "Check settling-in of",
+      "repot": "Repot",
+      "fertilize": "Fertilize",
+      "rotate": "Rotate",
+      "dust": "Dust",
+      "mist": "Mist",
+      "photo": "Take a photo of"
+    }
+  }
+}

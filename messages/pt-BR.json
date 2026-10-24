@@ -1,0 +1,120 @@
+{
+  "common": {
+    "appName": "How Not To Kill Your Plants",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "loading": "Carregando…",
+    "error": "Algo deu errado. Tente novamente.",
+    "nav": {
+      "home": "Início",
+      "plants": "Plantas",
+      "add": "Adicionar planta",
+      "settings": "Ajustes",
+      "label": "Navegação principal"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "email": "E-mail",
+      "password": "Senha",
+      "submit": "Entrar",
+      "submitting": "Entrando…",
+      "error": "E-mail ou senha incorretos."
+    },
+    "invite": {
+      "title": "Crie sua conta",
+      "name": "Nome",
+      "email": "E-mail",
+      "password": "Senha",
+      "submit": "Criar conta",
+      "submitting": "Criando…",
+      "errors": {
+        "expired": "Este convite expirou. Peça um novo.",
+        "used": "Este convite já foi usado.",
+        "not_found": "Este link de convite não é válido.",
+        "invalid": "Confira seus dados: a senha precisa ter pelo menos 8 caracteres.",
+        "generic": "Não foi possível criar a conta. Confira seus dados."
+      }
+    }
+  },
+  "home": {
+    "title": "Hoje",
+    "empty": "Nada a fazer hoje. Suas plantas estão felizes.",
+    "overdue": "Atrasadas",
+    "dueToday": "Para hoje"
+  },
+  "plants": {
+    "title": "Plantas",
+    "empty": "Ainda não há plantas. Adicione a primeira!",
+    "location": "Local",
+    "acquired": "Adquirida em {date}"
+  },
+  "addPlant": {
+    "title": "Adicionar planta",
+    "takePhoto": "Tirar uma foto",
+    "choosePhoto": "Escolher uma foto",
+    "identifying": "Identificando sua planta…",
+    "justBought": "Acabou de comprar?",
+    "yes": "Sim",
+    "no": "Não",
+    "confirmSave": "Está certo, adicionar"
+  },
+  "tasks": {
+    "outcome": {
+      "watered": "Reguei",
+      "stillMoist": "Ainda úmida",
+      "skip": "Pular"
+    },
+    "done": "Feito",
+    "completedBy": "Feito por {name}",
+    "dueOn": "Para {date}",
+    "overdueBy": "{count, plural, one {# dia de atraso} other {# dias de atraso}}"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "signOut": "Sair",
+    "notifications": "Notificações",
+    "pushTime": "Horário do lembrete matinal"
+  },
+  "calendar": {
+    "title": "Calendário",
+    "feedUrl": "Seu link do calendário",
+    "regenerate": "Gerar um novo link",
+    "regenerateWarning": "O link antigo deixará de funcionar.",
+    "copy": "Copiar link",
+    "eventTitle": "{count, plural, one {# tarefa das plantas} other {# tarefas das plantas}}"
+  },
+  "push": {
+    "enable": "Ativar lembretes",
+    "disable": "Desativar lembretes",
+    "denied": "As notificações estão bloqueadas nas configurações do navegador.",
+    "digestTitle": "Suas plantas precisam de você hoje",
+    "digestBody": "{count, plural, one {# tarefa para fazer} other {# tarefas para fazer}}."
+  },
+  "care": {
+    "type": {
+      "water": "Rega",
+      "settle_check": "Verificação de adaptação",
+      "repot": "Replantio",
+      "fertilize": "Adubação",
+      "rotate": "Rotação",
+      "dust": "Limpeza das folhas",
+      "mist": "Borrifar",
+      "photo": "Foto de acompanhamento"
+    },
+    "verb": {
+      "water": "Regar",
+      "settle_check": "Verificar a adaptação de",
+      "repot": "Replantar",
+      "fertilize": "Adubar",
+      "rotate": "Girar",
+      "dust": "Limpar as folhas de",
+      "mist": "Borrifar",
+      "photo": "Fotografar"
+    }
+  }
+}

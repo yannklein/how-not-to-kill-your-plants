@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -23,7 +25,7 @@ export default function LoginPage() {
       password: String(form.get("password")),
     });
     if (error) {
-      setError("Wrong email or password.");
+      setError(t("error"));
       setPending(false);
       return;
     }
@@ -35,16 +37,16 @@ export default function LoginPage() {
     <main className="flex min-h-dvh items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input id="email" name="email" type="email" autoComplete="email" required />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 name="password"
@@ -59,7 +61,7 @@ export default function LoginPage() {
               </p>
             )}
             <Button type="submit" disabled={pending}>
-              {pending ? "Signing in…" : "Sign in"}
+              {pending ? t("submitting") : t("submit")}
             </Button>
           </form>
         </CardContent>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { acceptInviteAction } from "./actions";
 
 export default function InvitePage() {
   const { token } = useParams<{ token: string }>();
+  const t = useTranslations("auth.invite");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -27,7 +29,7 @@ export default function InvitePage() {
     };
     const result = await acceptInviteAction(token, input);
     if (!result.ok) {
-      setError(result.error);
+      setError(t(`errors.${result.error}`));
       setPending(false);
       return;
     }
@@ -47,20 +49,20 @@ export default function InvitePage() {
     <main className="flex min-h-dvh items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Create your account</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t("name")}</Label>
               <Input id="name" name="name" autoComplete="name" required />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input id="email" name="email" type="email" autoComplete="email" required />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 name="password"
@@ -76,7 +78,7 @@ export default function InvitePage() {
               </p>
             )}
             <Button type="submit" disabled={pending}>
-              {pending ? "Creating…" : "Create account"}
+              {pending ? t("submitting") : t("submit")}
             </Button>
           </form>
         </CardContent>
