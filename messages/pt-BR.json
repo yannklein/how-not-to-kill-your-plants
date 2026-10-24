@@ -185,7 +185,8 @@
       "careProfiles": "Perfis de cuidado",
       "careProfilesNone": "Nenhum perfil de cuidado com falha.",
       "retry": "Tentar de novo"
-    }
+    },
+    "saved": "Salvo."
   },
   "calendar": {
     "title": "Calendário",
@@ -193,7 +194,11 @@
     "regenerate": "Gerar um novo link",
     "regenerateWarning": "O link antigo deixará de funcionar.",
     "copy": "Copiar link",
-    "eventTitle": "{count, plural, one {# tarefa das plantas} other {# tarefas das plantas}}"
+    "eventTitle": "{count, plural, one {# tarefa das plantas} other {# tarefas das plantas}}",
+    "name": "Minhas plantas",
+    "addToApple": "Adicionar ao Calendário da Apple",
+    "copied": "Copiado",
+    "regenerateConfirm": "Gerar um novo link? O antigo deixará de funcionar."
   },
   "push": {
     "enable": "Ativar lembretes",

@@ -29,14 +29,11 @@ export async function coverUrls(plants: Pick<Plant, "id" | "coverPhotoId">[]): P
   return out;
 }
 
-/**
- * Active tasks due on or before `today` for alive plants in the user's groups,
- * grouped by plant. Groups with the most overdue task come first, then by name.
- */
-export async function dueTasksForUser(userId: string, today: string): Promise<DueGroup[]> {
+/** Shared filter: active tasks of alive plants in the user's groups due on or before `until`. */
+async function activeTasksUntil(userId: string, until: string) {
   const groupIds = await visibleGroupIds(userId);
   if (groupIds.length === 0) return [];
-  const rows = await db
+  return db
     .select({ task: careTask, plant })
     .from(careTask)
     .innerJoin(plant, eq(careTask.plantId, plant.id))
@@ -45,10 +42,27 @@ export async function dueTasksForUser(userId: string, today: string): Promise<Du
         inArray(plant.groupId, groupIds),
         eq(plant.status, "alive"),
         eq(careTask.active, true),
-        lte(careTask.dueOn, today),
+        lte(careTask.dueOn, until),
       ),
     )
     .orderBy(asc(careTask.dueOn));
+}
+
+/** Flat list of the user's tasks due on or before `until` (overdue included), for the calendar feed. */
+export async function tasksForUserUntil(
+  userId: string,
+  until: string,
+): Promise<{ plantName: string; type: CareTask["type"]; dueOn: string }[]> {
+  const rows = await activeTasksUntil(userId, until);
+  return rows.map(({ task, plant: pl }) => ({ plantName: pl.name, type: task.type, dueOn: task.dueOn }));
+}
+
+/**
+ * Active tasks due on or before `today` for alive plants in the user's groups,
+ * grouped by plant. Groups with the most overdue task come first, then by name.
+ */
+export async function dueTasksForUser(userId: string, today: string): Promise<DueGroup[]> {
+  const rows = await activeTasksUntil(userId, today);
 
   const byPlant = new Map<string, DueGroup>();
   for (const { task, plant: pl } of rows) {

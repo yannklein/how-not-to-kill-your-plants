@@ -185,7 +185,8 @@
       "careProfiles": "Care profiles",
       "careProfilesNone": "No failed care profiles.",
       "retry": "Retry"
-    }
+    },
+    "saved": "Saved."
   },
   "calendar": {
     "title": "Calendar",
@@ -193,7 +194,11 @@
     "regenerate": "Generate a new link",
     "regenerateWarning": "The old link will stop working.",
     "copy": "Copy link",
-    "eventTitle": "{count, plural, one {# plant task} other {# plant tasks}}"
+    "eventTitle": "{count, plural, one {# plant task} other {# plant tasks}}",
+    "name": "My plants",
+    "addToApple": "Add to Apple Calendar",
+    "copied": "Copied",
+    "regenerateConfirm": "Generate a new link? The old one will stop working."
   },
   "push": {
     "enable": "Turn on reminders",

@@ -185,7 +185,8 @@
       "careProfiles": "Profils d'entretien",
       "careProfilesNone": "Aucun profil d'entretien en échec.",
       "retry": "Réessayer"
-    }
+    },
+    "saved": "Enregistré."
   },
   "calendar": {
     "title": "Calendrier",
@@ -193,7 +194,11 @@
     "regenerate": "Générer un nouveau lien",
     "regenerateWarning": "L'ancien lien cessera de fonctionner.",
     "copy": "Copier le lien",
-    "eventTitle": "{count, plural, one {# tâche pour les plantes} other {# tâches pour les plantes}}"
+    "eventTitle": "{count, plural, one {# tâche pour les plantes} other {# tâches pour les plantes}}",
+    "name": "Mes plantes",
+    "addToApple": "Ajouter à Calendrier Apple",
+    "copied": "Copié",
+    "regenerateConfirm": "Générer un nouveau lien ? L'ancien cessera de fonctionner."
   },
   "push": {
     "enable": "Activer les rappels",
