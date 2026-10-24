@@ -34,7 +34,7 @@ export class InvalidOutcomeError extends Error {
 }
 
 /** Used when the plant's species has no ready care profile yet. */
-const FALLBACK_PROFILE: ScheduleProfile = {
+export const FALLBACK_PROFILE: ScheduleProfile = {
   waterIntervalDays: { growing: { min: 7, max: 10 }, dormant: { min: 10, max: 14 } },
   repotEveryMonths: 18,
   fertilizeEveryDays: 30,

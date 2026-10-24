@@ -62,7 +62,23 @@
     "no": "Não",
     "confirmSave": "Está certo, adicionar",
     "photoTooLarge": "Esta foto é grande demais.",
-    "photoBadType": "Use uma foto em JPEG."
+    "photoBadType": "Use uma foto em JPEG.",
+    "retakePhoto": "Tirar outra foto",
+    "addLabelPhoto": "Adicionar foto da etiqueta",
+    "uploading": "Enviando a foto…",
+    "speciesLabel": "Que planta é essa?",
+    "somethingElse": "Outra coisa",
+    "speciesInputLabel": "Espécie",
+    "speciesPlaceholder": "ex.: Monstera deliciosa",
+    "notPlant": "Não encontramos uma planta nesta foto. Digite a espécie.",
+    "identifyFailed": "Não conseguimos identificar esta planta agora. Digite a espécie.",
+    "nameLabel": "Nome",
+    "groupLabel": "Quem cuida dela?",
+    "spotLabel": "Lugar (opcional)",
+    "spotNone": "Sem lugar",
+    "potSizeLabel": "Tamanho do vaso (cm)",
+    "saving": "Adicionando…",
+    "error": "Algo deu errado. Tente novamente."
   },
   "tasks": {
     "outcome": {
