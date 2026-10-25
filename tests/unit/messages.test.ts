@@ -35,7 +35,7 @@ describe("messages", () => {
   it("has all namespaces", () => {
     const ns = Object.keys(load("en")).sort();
     expect(ns).toEqual(
-      ["addPlant", "auth", "calendar", "care", "common", "feed", "gardener", "home", "plants", "push", "settings", "tasks"].sort(),
+      ["addPlant", "auth", "calendar", "care", "common", "discover", "feed", "gardener", "home", "plants", "push", "settings", "tasks", "tips"].sort(),
     );
   });
 

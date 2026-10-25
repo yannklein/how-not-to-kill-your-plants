@@ -309,5 +309,11 @@
     "photoAttached": "Foto anexada",
     "conversations": "Conversas",
     "empty": "Pergunte o que quiser sobre suas plantas: folhas amarelas, onde colocar, quando regar…"
+  },
+  "discover": {
+    "title": "Descobrir"
+  },
+  "tips": {
+    "title": "Dicas"
   }
 }

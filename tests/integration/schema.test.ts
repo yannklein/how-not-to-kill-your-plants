@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db, resetDb } from "./setup";
-import { careTask, feedEvent, gardenerAlert, group, home, photo, plant, species, user } from "@/db/schema";
+import { careTask, feedEvent, gardenerAlert, group, home, photo, plant, species, tip, tipRecipient, user } from "@/db/schema";
 
 beforeEach(resetDb);
 
@@ -59,5 +59,15 @@ describe("schema", () => {
       .values({ plantId: p.id, userId: "u2", objectKey: "photos/y.jpg", width: 1, height: 1 })
       .returning();
     expect(ph.checkedAt).toBeNull();
+  });
+
+  it("keeps each tip unique by its trigger and queues it for recipients", async () => {
+    await db.insert(user).values({ id: "u3", name: "Marcela", email: "m@example.com" });
+    const [t] = await db.insert(tip).values({ kind: "season", triggerKey: "season:2027-spring", params: {} }).returning();
+    await expect(
+      db.insert(tip).values({ kind: "season", triggerKey: "season:2027-spring", params: {} }),
+    ).rejects.toMatchObject({ cause: { code: "23505" } });
+    const [r] = await db.insert(tipRecipient).values({ tipId: t.id, userId: "u3" }).returning();
+    expect(r.shownAt).toBeNull();
   });
 });

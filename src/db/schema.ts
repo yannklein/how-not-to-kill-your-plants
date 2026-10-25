@@ -50,6 +50,7 @@ export const alertCategory = pgEnum("alert_category", [
 ]);
 export const alertStatus = pgEnum("alert_status", ["open", "done", "dismissed"]);
 export const alertSource = pgEnum("alert_source", ["photo", "pattern"]);
+export const tipKind = pgEnum("tip_kind", ["season", "repot", "species", "pattern"]);
 export const lightLevel = pgEnum("light_level", [
   "low",
   "medium",
@@ -406,6 +407,8 @@ export const wishlistItem = pgTable("wishlist_item", {
   }),
   name: text("name").notNull(),
   reason: text("reason"),
+  scientificName: text("scientific_name"),
+  card: jsonb("card").$type<Record<string, unknown>>(), // the Discover card as saved, in its language
   createdAt: createdAt(),
 });
 
@@ -470,4 +473,44 @@ export const gardenerAlert = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("gardener_alert_plant_status_idx").on(t.plantId, t.status)],
+);
+
+/** The user's last Discover search (one per user, replaced by the next). */
+export const discoverSearch = pgTable("discover_search", {
+  id: id(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  input: jsonb("input").$type<Record<string, unknown>>().notNull(),
+  results: jsonb("results").$type<Record<string, unknown>[]>().notNull(),
+  locale: text("locale").$type<"en" | "fr" | "pt-BR">().notNull(),
+  createdAt: createdAt(),
+});
+
+/** A gardener tip, stored once; `tipRecipient` says who gets it and when it was shown. */
+export const tip = pgTable("tip", {
+  id: id(),
+  kind: tipKind("kind").notNull(),
+  plantId: uuid("plant_id").references(() => plant.id, { onDelete: "cascade" }),
+  category: alertCategory("category"),
+  triggerKey: text("trigger_key").notNull().unique(),
+  texts: jsonb("texts").$type<{ en: string; fr: string; "pt-BR": string } | null>(),
+  params: jsonb("params").$type<Record<string, string | number | boolean>>().notNull().default({}),
+  triggeredAt: timestamp("triggered_at").notNull().defaultNow(),
+  createdAt: createdAt(),
+});
+
+export const tipRecipient = pgTable(
+  "tip_recipient",
+  {
+    tipId: uuid("tip_id")
+      .notNull()
+      .references(() => tip.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    shownAt: timestamp("shown_at"), // null = queued
+  },
+  (t) => [primaryKey({ columns: [t.tipId, t.userId] })],
 );

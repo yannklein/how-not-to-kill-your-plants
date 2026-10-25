@@ -22,6 +22,13 @@
       "when": 1792884229591,
       "tag": "0002_petite_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792920510617,
+      "tag": "0003_windy_abomination",
+      "breakpoints": true
     }
   ]
 }

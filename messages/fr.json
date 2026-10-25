@@ -309,5 +309,11 @@
     "photoAttached": "Photo jointe",
     "conversations": "Conversations",
     "empty": "Posez n'importe quelle question : feuilles jaunes, où les placer, quand arroser…"
+  },
+  "discover": {
+    "title": "Découvrir"
+  },
+  "tips": {
+    "title": "Astuces"
   }
 }

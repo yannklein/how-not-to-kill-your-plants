@@ -309,5 +309,11 @@
     "photoAttached": "Photo attached",
     "conversations": "Conversations",
     "empty": "Ask anything about your plants: yellow leaves, where to put them, when to water…"
+  },
+  "discover": {
+    "title": "Discover"
+  },
+  "tips": {
+    "title": "Tips"
   }
 }
