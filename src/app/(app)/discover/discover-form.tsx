@@ -131,7 +131,7 @@ export function DiscoverForm({
         />
       </div>
       {paused ? (
-        <p role="status" className="rounded-xl bg-muted p-3 text-center text-sm">
+        <p role="status" className="rounded-2xl bg-sunshine p-3 text-center text-sm text-sunshine-foreground">
           {t("paused")}
         </p>
       ) : (
@@ -142,7 +142,7 @@ export function DiscoverForm({
 
       {last && last.cards.length > 0 ? (
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">{t("results")}</h2>
+          <h2 className="font-heading text-xl">{t("results")}</h2>
           <ul className="flex flex-col gap-2">
             {last.cards.map((card) => {
               const isSaved = saved.includes(card.scientificName);

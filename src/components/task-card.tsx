@@ -88,7 +88,7 @@ export function TaskCard({ tasks, plant }: TaskCardProps) {
   return (
     <li
       data-testid="task-card"
-      className="flex flex-col gap-3 rounded-xl border bg-card p-3 text-card-foreground"
+      className="flex flex-col gap-3 rounded-3xl border-[1.5px] bg-card p-4 text-card-foreground"
     >
       <div className="flex items-center gap-3">
         <PlantAvatar coverUrl={plant.coverUrl} mood={plant.mood} moodLabel={t(`feed.mood.${plant.mood}`)} />
@@ -99,7 +99,7 @@ export function TaskCard({ tasks, plant }: TaskCardProps) {
           className={
             overdueDays > 0
               ? "shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive"
-              : "shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium"
+              : "shrink-0 rounded-full bg-sunshine px-2.5 py-0.5 text-xs font-bold text-sunshine-foreground"
           }
         >
           {overdueDays > 0 ? t("tasks.overdueBy", { count: overdueDays }) : t("home.dueToday")}

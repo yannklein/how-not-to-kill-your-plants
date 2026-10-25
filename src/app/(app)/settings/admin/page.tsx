@@ -34,7 +34,7 @@ export default async function AdminPage() {
 
   return (
     <main className="flex flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <h1 className="font-heading text-3xl leading-tight text-balance">{t("title")}</h1>
 
       <Section title={t("home")}>
         <HomeForm

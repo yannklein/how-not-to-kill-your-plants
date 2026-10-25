@@ -114,7 +114,7 @@ export function ChatView({ threadId, messages, paused }: { threadId: string; mes
       </ul>
 
       {paused ? (
-        <p role="status" className="rounded-xl bg-muted p-3 text-center text-sm">
+        <p role="status" className="rounded-2xl bg-sunshine p-3 text-center text-sm text-sunshine-foreground">
           {t("paused")}
         </p>
       ) : (

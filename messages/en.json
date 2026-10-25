@@ -53,10 +53,13 @@
     "addPlant": "Add plant",
     "myPlants": "My plants",
     "aiBanner": "AI spend at {pct}% of ${cap} this month",
-    "gardener": "🩺 Gardener",
-    "discover": "🔍 Discover",
-    "wishlist": "⭐ Wishlist",
-    "tips": "💡 Tips"
+    "gardener": "Gardener",
+    "discover": "Discover",
+    "wishlist": "Wishlist",
+    "tips": "Tips",
+    "greetingMorning": "Good morning, {name}",
+    "greetingAfternoon": "Good afternoon, {name}",
+    "greetingEvening": "Good evening, {name}"
   },
   "plants": {
     "title": "Plants",

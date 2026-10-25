@@ -53,10 +53,13 @@
     "addPlant": "Adicionar planta",
     "myPlants": "Minhas plantas",
     "aiBanner": "Gasto com IA em {pct}% de US$ {cap} neste mês",
-    "gardener": "🩺 Jardineiro",
-    "discover": "🔍 Descobrir",
-    "wishlist": "⭐ Desejos",
-    "tips": "💡 Dicas"
+    "gardener": "Jardineiro",
+    "discover": "Descobrir",
+    "wishlist": "Desejos",
+    "tips": "Dicas",
+    "greetingMorning": "Bom dia, {name}",
+    "greetingAfternoon": "Boa tarde, {name}",
+    "greetingEvening": "Boa noite, {name}"
   },
   "plants": {
     "title": "Plantas",

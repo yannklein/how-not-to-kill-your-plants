@@ -30,7 +30,7 @@ export default async function GardenerPage({
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold">🩺 {t("title")}</h1>
+      <h1 className="font-heading text-3xl leading-tight text-balance">🩺 {t("title")}</h1>
       {threads.length > 1 ? (
         <nav aria-label={t("conversations")} className="-mx-4 flex gap-2 overflow-x-auto px-4">
           {threads.map((th) => (

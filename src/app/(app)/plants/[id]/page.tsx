@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-1">
-      <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+      <h2 className="font-heading text-lg">{title}</h2>
       {children}
     </section>
   );
@@ -61,12 +61,12 @@ export default async function PlantPage({ params }: { params: Promise<{ id: stri
     format.dateTime(new Date(`${day}T00:00:00Z`), { dateStyle: "medium", timeZone: "UTC" });
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
+    <main className="mx-auto flex max-w-md flex-col gap-6 px-5 pt-6 pb-10">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-4">
           <PlantAvatar coverUrl={cover ?? null} mood={mood} moodLabel={tf(`mood.${mood}`)} size="lg" />
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold">{plant.name}</h1>
+            <h1 className="font-heading text-3xl leading-tight text-balance">{plant.name}</h1>
             {sp ? <p className="text-sm text-muted-foreground">{speciesLabel(sp, user.locale)}</p> : null}
             <p className="text-sm">{tf(`mood.${mood}`)}</p>
           </div>
@@ -105,7 +105,7 @@ export default async function PlantPage({ params }: { params: Promise<{ id: stri
       />
 
       {sp?.careProfileStatus === "pending" ? (
-        <p className="w-fit rounded-full bg-muted px-3 py-1 text-xs font-medium">{t("profilePending")}</p>
+        <p className="w-fit rounded-full bg-sunshine px-3 py-1 text-xs font-bold text-sunshine-foreground">{t("profilePending")}</p>
       ) : null}
 
       {profile && text ? (

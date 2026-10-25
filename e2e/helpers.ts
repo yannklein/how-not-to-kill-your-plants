@@ -8,5 +8,5 @@ export async function loginAs(page: Page, who: UserKey): Promise<void> {
   await page.locator("#email").fill(u.email);
   await page.locator("#password").fill(u.password);
   await page.locator('form button[type="submit"]').click();
-  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 }); // the first page after a cold server start compiles slowly
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 }); // the first page after a cold server start compiles slowly
 }

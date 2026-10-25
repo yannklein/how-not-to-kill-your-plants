@@ -16,7 +16,7 @@ export function DiscoverCardView({ card, actions, testId }: { card: Card; action
     [t("harvest"), card.harvest],
   ];
   return (
-    <li data-testid={testId} className="flex flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground">
+    <li data-testid={testId} className="flex flex-col gap-2 rounded-3xl border-[1.5px] bg-card p-4 text-card-foreground">
       <div>
         <p className="font-medium">{card.commonName}</p>
         <p className="text-sm italic text-muted-foreground">{card.scientificName}</p>

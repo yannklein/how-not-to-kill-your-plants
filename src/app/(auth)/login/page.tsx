@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { APP_TITLE } from "@/components/home-hero";
+import { LeafSprig } from "@/components/leaf-sprig";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
@@ -34,10 +36,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 p-5">
+      <div className="relative w-full max-w-sm pt-4">
+        <LeafSprig className="absolute -top-2 right-0 size-24 text-leaf" />
+        <p className="max-w-60 font-heading text-[2rem] leading-[1.1] text-balance">{APP_TITLE}</p>
+      </div>
+      <Card className="w-full max-w-sm rounded-3xl border-[1.5px] shadow-none">
         <CardHeader>
-          <CardTitle>{t("title")}</CardTitle>
+          <CardTitle className="font-heading text-xl font-normal">{t("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">

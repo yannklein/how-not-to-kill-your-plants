@@ -17,7 +17,7 @@ export default async function DiscoverPage() {
   ]);
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold">🔍 {t("title")}</h1>
+      <h1 className="font-heading text-3xl leading-tight text-balance">🔍 {t("title")}</h1>
       <DiscoverForm
         spots={spots}
         last={last ? { input: last.input, cards: last.cards } : null}

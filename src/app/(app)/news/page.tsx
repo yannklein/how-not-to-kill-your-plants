@@ -23,9 +23,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold">{t("title")}</h1>
+      <h1 className="font-heading text-3xl leading-tight text-balance">{t("title")}</h1>
       {posts.length === 0 ? (
-        <p className="rounded-xl bg-muted p-4 text-center text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-3xl border-[1.5px] border-dashed border-border p-5 text-center text-muted-foreground">{t("empty")}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {posts.map((post) => (

@@ -19,7 +19,7 @@ export function FeedPost({
   const body = (
     <>
       {isTip ? (
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xl">💡</span>
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-sunshine text-xl">💡</span>
       ) : (
         <PlantAvatar coverUrl={post.plant!.coverUrl} mood={post.mood} moodLabel={moodLabel} size="sm" />
       )}
@@ -36,7 +36,7 @@ export function FeedPost({
       </div>
     </>
   );
-  const cardClass = "flex gap-3 rounded-xl border bg-card p-3 text-card-foreground";
+  const cardClass = "flex gap-3 rounded-3xl border-[1.5px] bg-card p-4 text-card-foreground";
   return (
     <li data-testid="feed-post">
       {post.plant ? (

@@ -24,7 +24,7 @@ export function InstallHint() {
   const [dismissed, setDismissed] = useState(false);
   if (!eligible || dismissed) return null;
   return (
-    <aside className="m-4 mb-0 flex items-start gap-3 rounded-xl border bg-card p-3 text-sm">
+    <aside className="m-4 mb-0 flex items-start gap-3 rounded-3xl border-[1.5px] bg-card p-4 text-sm">
       <Share className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="flex-1">
         <p className="font-medium">{t("installTitle")}</p>

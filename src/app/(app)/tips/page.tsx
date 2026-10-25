@@ -17,16 +17,16 @@ export default async function TipsPage() {
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold">💡 {t("title")}</h1>
-      {tips.length === 0 ? <p className="rounded-xl bg-muted p-4 text-center text-muted-foreground">{t("empty")}</p> : null}
+      <h1 className="font-heading text-3xl leading-tight text-balance">💡 {t("title")}</h1>
+      {tips.length === 0 ? <p className="rounded-3xl border-[1.5px] border-dashed border-border p-5 text-center text-muted-foreground">{t("empty")}</p> : null}
       {[...groups.values()].map((g) => (
         <section key={g.plantId ?? "home"} className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">
+          <h2 className="font-heading text-xl">
             {g.plantId ? <Link href={`/plants/${g.plantId}`}>{g.title}</Link> : g.title}
           </h2>
           <ul className="flex flex-col gap-2">
             {g.tips.map((tip) => (
-              <li key={tip.id} className="rounded-xl border bg-card p-3 text-sm">
+              <li key={tip.id} className="rounded-3xl border-[1.5px] bg-card p-4 text-sm">
                 <p>{tip.text}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {format.dateTime(tip.shownAt, { dateStyle: "medium" })}

@@ -18,7 +18,7 @@ export function PlantAvatar({
 }) {
   return (
     <div className={cn("relative shrink-0", SIZES[size])}>
-      <div className="size-full overflow-hidden rounded-full bg-muted">
+      <div className="size-full overflow-hidden rounded-full border-2 border-card bg-secondary outline-2 outline-primary/70">
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={coverUrl} alt="" className="size-full object-cover" />

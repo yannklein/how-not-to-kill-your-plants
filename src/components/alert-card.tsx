@@ -31,7 +31,7 @@ export function AlertCard({ alert }: { alert: AlertView }) {
     });
 
   return (
-    <li data-testid="alert-card" className="flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-950">
+    <li data-testid="alert-card" className="flex flex-col gap-3 rounded-3xl border-[1.5px] border-sunshine-foreground/25 bg-sunshine p-4 text-sunshine-foreground">
       <div className="flex items-start gap-3">
         <div className="size-12 shrink-0 overflow-hidden rounded-full bg-muted">
           {alert.coverUrl ? (

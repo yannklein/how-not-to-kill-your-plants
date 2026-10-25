@@ -3,8 +3,8 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
-const GREEN = "#2f7d4f";
-const LEAF = "#ffffff";
+const GREEN = "#4a7a5d";
+const LEAF = "#f4f7f0";
 const OUT = path.resolve(import.meta.dirname, "../public/icons");
 
 // A white leaf on a green field. `inset` shrinks the glyph for the maskable
