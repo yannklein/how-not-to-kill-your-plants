@@ -119,5 +119,8 @@ export async function applyAlertSuggestion(userId: string, alertId: string): Pro
     .from(gardenerAlert)
     .where(eq(gardenerAlert.id, alertId));
   if (!row?.suggestion) notFound();
-  return applySuggestion(userId, row.plantId, row.suggestion as Suggestion);
+  const result = await applySuggestion(userId, row.plantId, row.suggestion as Suggestion);
+  // Acting on the advice (or finding it already in place) settles the card for everyone.
+  if (result !== "gone") await resolveAlert(userId, alertId, "done");
+  return result;
 }

@@ -81,11 +81,11 @@ export default async function PlantPage({ params }: { params: Promise<{ id: stri
 
       {plant.persona?.summary ? <p className="text-sm italic text-muted-foreground">{plant.persona.summary}</p> : null}
 
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2">
         <PhotoCapture plantId={plant.id} label={t("addPhoto")} variant="outline" />
         <Link
           href={`/gardener?plant=${plant.id}`}
-          className={cn(buttonVariants({ variant: "outline" }), "h-11 flex-1 text-base")}
+          className={cn(buttonVariants({ variant: "outline" }), "h-11 text-base")}
         >
           {tg("askAbout")}
         </Link>

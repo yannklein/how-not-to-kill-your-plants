@@ -26,7 +26,7 @@ Rules:
 - Report a problem only when it is visible in the photo or clearly implied by the care history. If unsure, report no problem.
 - Never report "looks healthy" as a problem.
 - Pick exactly one category: light, overwatering, underwatering, pests, nutrients, temperature, humidity, repot, other.
-- Write the warning in English (en), French (fr) and Brazilian Portuguese (pt-BR): one or two calm, practical sentences saying what you see and what to do. Organic and non-chemical remedies first.
+- Write the warning in English (en), French (fr) and Brazilian Portuguese (pt-BR): one or two calm, practical sentences saying what you see and what to do, in plain text, no Markdown. Organic and non-chemical remedies first.
 - Optionally propose ONE concrete change: a watering interval in days (1-60), or moving the plant to one of the given spots (use its id). Only propose a spot from the list.`;
 
 export const HealthFinding = z.object({
@@ -52,7 +52,8 @@ export type CheckInput = {
 };
 export type CheckDeps = { call?: (input: CheckInput) => Promise<StructuredOutput> };
 
-async function callLive(input: CheckInput): Promise<StructuredOutput> {
+/** The real model call (exported for its request-limit test). */
+export async function liveCheckCall(input: CheckInput): Promise<StructuredOutput> {
   const images = await Promise.all(
     input.photoKeys.map(async (key) => ({
       type: "image" as const,
@@ -75,6 +76,9 @@ async function callLive(input: CheckInput): Promise<StructuredOutput> {
       },
     ],
     schema: HealthFinding,
+    // Background work: give up rather than hold the cron tick for minutes.
+    timeoutMs: 90_000,
+    maxRetries: 1,
   });
 }
 
@@ -105,7 +109,7 @@ const allSpots = () =>
 
 /** One model call through the budget; null when skipped, refused or unusable. */
 async function runCheck(input: CheckInput, deps: CheckDeps): Promise<Finding | null> {
-  const call = deps.call ?? (env.AI_MODE === "mock" ? callMock : callLive);
+  const call = deps.call ?? (env.AI_MODE === "mock" ? callMock : liveCheckCall);
   try {
     const raw = await withBudget("health_check", null, MODEL, async () => {
       const out = await call(input);
@@ -124,36 +128,24 @@ async function runCheck(input: CheckInput, deps: CheckDeps): Promise<Finding | n
   }
 }
 
-/**
- * Checks one new plant photo against the plant's history. The photo is marked
- * checked first, so a failing check is never retried forever.
- */
-export async function checkPhoto(photoId: string, deps: CheckDeps = {}): Promise<"alert" | "healthy" | "skipped"> {
-  const [ph] = await db.update(photo).set({ checkedAt: new Date() }).where(eq(photo.id, photoId)).returning();
-  if (!ph) return "skipped";
-  const [p] = await db.select().from(plant).where(eq(plant.id, ph.plantId));
-  const [previous] = await db
-    .select({ objectKey: photo.objectKey })
-    .from(photo)
-    .where(and(eq(photo.plantId, ph.plantId), eq(photo.kind, "plant"), lt(photo.takenAt, ph.takenAt)))
-    .orderBy(desc(photo.takenAt))
-    .limit(1);
+/** Looks at a plant's photo (and the one before it) and opens a warning if there's a visible problem. */
+async function checkImages(
+  plantId: string,
+  photoKeys: string[],
+  photoId: string | null,
+  deps: CheckDeps,
+): Promise<"alert" | "healthy" | "skipped"> {
+  const [p] = await db.select().from(plant).where(eq(plant.id, plantId));
+  if (!p) return "skipped";
   const spots = await allSpots();
   const finding = await runCheck(
-    {
-      kind: "photo",
-      plantName: p.name,
-      context: await plantContext(p.id),
-      spots,
-      flags: [],
-      photoKeys: previous ? [ph.objectKey, previous.objectKey] : [ph.objectKey],
-    },
+    { kind: "photo", plantName: p.name, context: await plantContext(plantId), spots, flags: [], photoKeys },
     deps,
   );
   if (!finding) return "skipped";
   if (!finding.problem) return "healthy";
   await createAlert({
-    plantId: p.id,
+    plantId,
     source: "photo",
     category: finding.category,
     texts: finding.texts,
@@ -161,6 +153,38 @@ export async function checkPhoto(photoId: string, deps: CheckDeps = {}): Promise
     photoId,
   });
   return "alert";
+}
+
+/** The plant's latest portrait taken before `before` (or the latest at all). */
+async function previousPhotoKey(plantId: string, before?: Date): Promise<string | null> {
+  const [row] = await db
+    .select({ objectKey: photo.objectKey })
+    .from(photo)
+    .where(and(eq(photo.plantId, plantId), eq(photo.kind, "plant"), before ? lt(photo.takenAt, before) : undefined))
+    .orderBy(desc(photo.takenAt))
+    .limit(1);
+  return row?.objectKey ?? null;
+}
+
+/**
+ * Checks one new plant photo against the plant's history. The photo is marked
+ * checked first, so a failing check is never retried forever.
+ */
+export async function checkPhoto(photoId: string, deps: CheckDeps = {}): Promise<"alert" | "healthy" | "skipped"> {
+  const [ph] = await db.update(photo).set({ checkedAt: new Date() }).where(eq(photo.id, photoId)).returning();
+  if (!ph) return "skipped";
+  const previous = await previousPhotoKey(ph.plantId, ph.takenAt);
+  return checkImages(ph.plantId, previous ? [ph.objectKey, previous] : [ph.objectKey], photoId, deps);
+}
+
+/** A photo attached in a plant's chat gets the same health check, so the whole group sees any warning. */
+export async function checkChatPhoto(
+  plantId: string,
+  photoKey: string,
+  deps: CheckDeps = {},
+): Promise<"alert" | "healthy" | "skipped"> {
+  const previous = await previousPhotoKey(plantId);
+  return checkImages(plantId, previous ? [photoKey, previous] : [photoKey], null, deps);
 }
 
 let photoChecksInFlight: Promise<number> | null = null;

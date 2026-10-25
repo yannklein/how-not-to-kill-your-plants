@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { aiUsage, careTask, gardenerAlert, group, home, photo, plant, taskCompletion, user } from "@/db/schema";
 import type { StructuredOutput } from "@/lib/ai/client";
-import { checkPhoto, runPatternChecks, runPhotoChecks } from "@/lib/gardener/checks";
+import { checkChatPhoto, checkPhoto, runPatternChecks, runPhotoChecks } from "@/lib/gardener/checks";
 import { monthKeyIn } from "@/lib/time";
 import { db, resetDb } from "./setup";
 
@@ -105,5 +105,15 @@ describe("gardener health checks (AI_MODE=mock)", () => {
     await db.update(plant).set({ lastPatternCheckOn: null }).where(eq(plant.id, healthy.id));
     await runPatternChecks("2026-11-20", { call });
     expect(call).not.toHaveBeenCalled();
+  });
+
+  it("also checks a photo attached in a plant's chat", async () => {
+    const [sick] = await db.insert(plant).values({ groupId, name: "Sick chat fern", acquiredOn: "2026-10-01" }).returning();
+    const [fine] = await db.insert(plant).values({ groupId, name: "Chat fern", acquiredOn: "2026-10-01" }).returning();
+    expect(await checkChatPhoto(sick.id, "photos/draft/chat.jpg")).toBe("alert");
+    expect(await checkChatPhoto(fine.id, "photos/draft/chat2.jpg")).toBe("healthy");
+    const all = await alerts();
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({ plantId: sick.id, source: "photo", photoId: null });
   });
 });

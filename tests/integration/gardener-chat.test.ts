@@ -42,7 +42,7 @@ describe("gardener chat (AI_MODE=mock)", () => {
 
   it("answers and offers a one-tap watering change", async () => {
     const { id } = await getThread(Y, plantId);
-    expect(await sendMessage(Y, id, { text: "Should I water more?" })).toEqual({ status: "ok" });
+    expect(await sendMessage(Y, id, { text: "Should I water more?" })).toEqual({ status: "ok", plantId });
     const messages = await listMessages(Y, id);
     expect(messages.map((m) => m.role)).toEqual(["user", "assistant"]);
     expect(messages[1].content.text).toContain("[mock]");

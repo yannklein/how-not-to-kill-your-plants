@@ -78,6 +78,8 @@ describe("gardener alerts", () => {
     const id = (await createAlert({ plantId, source: "pattern", category: "overwatering", texts, suggestion: { kind: "water", days: 12 } }))!;
     expect(await applyAlertSuggestion(A, id)).toBe("applied");
     expect((await db.select().from(plant).where(eq(plant.id, plantId)))[0].waterIntervalOverrideDays).toBe(12);
+    const [row] = await db.select().from(gardenerAlert).where(eq(gardenerAlert.id, id));
+    expect(row).toMatchObject({ status: "done", resolvedBy: A }); // acting on the advice settles the card
     await expect(applyAlertSuggestion(M, id)).rejects.toMatchObject(NOT_FOUND);
   });
 });

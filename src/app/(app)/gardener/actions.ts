@@ -3,15 +3,21 @@
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { applyAlertSuggestion, resolveAlert } from "@/lib/gardener/alerts";
+import { checkChatPhoto } from "@/lib/gardener/checks";
 import { acceptChatSuggestion, seedAlertMessage, sendMessage } from "@/lib/gardener/chat";
 import { requireUser } from "@/lib/session";
 
 export async function sendMessageAction(threadId: string, text: string, photoKey?: string) {
   const user = await requireUser();
   const result = await sendMessage(user.id, threadId, { text, photoKey });
+  if (result.status === "ok" && result.plantId && photoKey) {
+    const plantId = result.plantId;
+    after(() => checkChatPhoto(plantId, photoKey).catch((err) => console.error("chat photo check failed", err)));
+  }
   revalidatePath("/gardener");
-  return result;
+  return { status: result.status };
 }
 
 /** Applies a chat suggestion; returns a message to show when it couldn't be applied. */

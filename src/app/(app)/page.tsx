@@ -92,14 +92,14 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      <div className="flex gap-2">
-        <Link href="/plants/new" className={cn(buttonVariants(), "h-11 flex-1 text-base")}>
+      <div className="grid grid-cols-2 gap-2">
+        <Link href="/plants/new" className={cn(buttonVariants(), "h-11 text-base")}>
           {t("addPlant")}
         </Link>
-        <Link href="/plants" className={cn(buttonVariants({ variant: "outline" }), "h-11 flex-1 text-base")}>
+        <Link href="/plants" className={cn(buttonVariants({ variant: "outline" }), "h-11 text-base")}>
           {t("myPlants")}
         </Link>
-        <Link href="/gardener" className={cn(buttonVariants({ variant: "outline" }), "h-11 flex-1 text-base")}>
+        <Link href="/gardener" className={cn(buttonVariants({ variant: "outline" }), "col-span-2 h-11 text-base")}>
           {t("gardener")}
         </Link>
       </div>

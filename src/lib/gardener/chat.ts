@@ -27,7 +27,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const GARDENER_SYSTEM_PROMPT = `You are the gardener of a small household plant-care app for three friends sharing an apartment: one calm, friendly, expert gardener (not the plants themselves).
 
-- Answer briefly and practically, in the user's language (given as "locale").
+- Answer briefly and practically, in the user's language (given as "locale"). Write plain text, no Markdown (no asterisks, headings or bullet symbols); short paragraphs are fine.
 - You already know the household's plants, spots and season, and the plant in focus if there is one: never ask for details you were given.
 - Organic and non-chemical remedies first.
 - If you are unsure, say so and ask for a photo or one specific detail rather than guessing.
@@ -52,7 +52,8 @@ export type ChatInput = {
 };
 export type ChatDeps = { call?: (input: ChatInput) => Promise<StructuredOutput> };
 
-async function callLive(input: ChatInput): Promise<StructuredOutput> {
+/** The real model call (exported for its request-limit test). */
+export async function liveChatCall(input: ChatInput): Promise<StructuredOutput> {
   const image = input.photoKey
     ? [
         {
@@ -71,6 +72,9 @@ async function callLive(input: ChatInput): Promise<StructuredOutput> {
     system: GARDENER_SYSTEM_PROMPT,
     content: [...image, { type: "text" as const, text: JSON.stringify({ ...input, photoKey: undefined }) }],
     schema: ChatReply,
+    // A stuck call must not leave "thinking…" hanging; the fallback reply shows instead.
+    timeoutMs: 60_000,
+    maxRetries: 1,
   });
 }
 
@@ -161,11 +165,11 @@ export async function sendMessage(
   threadId: string,
   input: { text: string; photoKey?: string },
   deps: ChatDeps = {},
-): Promise<{ status: "ok" } | { status: "paused" }> {
+): Promise<{ status: "ok"; plantId: string | null } | { status: "paused" }> {
   const thread = await ownThread(userId, threadId);
   const text = input.text.trim().slice(0, 2000);
   const photoKey = input.photoKey ? assertDraftKeys([input.photoKey])[0] : undefined;
-  if (!text && !photoKey) return { status: "ok" };
+  if (!text && !photoKey) return { status: "ok", plantId: thread.plantId };
   if (await chatPaused()) return { status: "paused" };
 
   await addMessage(threadId, "user", { text, ...(photoKey ? { photoKey } : {}) });
@@ -181,7 +185,7 @@ export async function sendMessage(
       .limit(HISTORY),
   ]);
   const history = earlier.reverse().map((m) => ({ role: m.role, text: (m.content as ChatContent).text }));
-  const call = deps.call ?? (env.AI_MODE === "mock" ? callMock : callLive);
+  const call = deps.call ?? (env.AI_MODE === "mock" ? callMock : liveChatCall);
 
   let reply: ChatContent = { text: t(locale)("fallback") };
   try {
@@ -198,7 +202,7 @@ export async function sendMessage(
     console.error(`gardener chat failed for thread ${threadId}`, error);
   }
   await addMessage(threadId, "assistant", reply);
-  return { status: "ok" };
+  return { status: "ok", plantId: thread.plantId };
 }
 
 /** One tap on a suggestion in the chat. Each suggestion can be used once. */
