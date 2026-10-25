@@ -60,7 +60,7 @@ describe("POST /api/cron/tick", () => {
     const before = await db.select().from(careTask).where(eq(careTask.plantId, p.id));
     const body = await (await tick("Bearer test")).json();
     expect(body).toMatchObject({ profilesReady: 0, digestsSent: 0 });
-    for (const key of ["photoTasks", "birthdays", "moodPosts", "seasonPosts", "textsWritten", "photoChecks", "patternAlerts"])
+    for (const key of ["photoTasks", "birthdays", "moodPosts", "seasonPosts", "textsWritten", "photoChecks", "patternAlerts", "tipsShown"])
       expect(typeof body[key], key).toBe("number");
     const after = await db.select().from(careTask).where(and(eq(careTask.plantId, p.id)));
     expect(after).toHaveLength(before.length);

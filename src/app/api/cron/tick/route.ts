@@ -11,6 +11,9 @@ import {
 } from "@/lib/feed/cron";
 import { runPatternChecks, runPhotoChecks } from "@/lib/gardener/checks";
 import { runCareProfileRetries, runDigests } from "@/lib/push/digest";
+import { createTip } from "@/lib/tips/create";
+import { deliverTips } from "@/lib/tips/deliver";
+import { findTipCandidates } from "@/lib/tips/triggers";
 import { todayIn } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +43,10 @@ export async function POST(req: Request) {
   // Optional AI work last, so a slow model never delays the morning push.
   const photoChecks = await step("photo checks", () => runPhotoChecks());
   const patternAlerts = await step("pattern checks", () => runPatternChecks(today));
+  const tipsShown = await step("tips", async () => {
+    for (const c of await findTipCandidates(today)) await createTip(c);
+    return deliverTips(now);
+  });
   const textsWritten = await step("feed texts", () => runFeedTextFill());
   return Response.json({
     profilesReady,
@@ -50,6 +57,7 @@ export async function POST(req: Request) {
     digestsSent,
     photoChecks,
     patternAlerts,
+    tipsShown,
     textsWritten,
   });
 }

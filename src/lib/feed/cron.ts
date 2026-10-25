@@ -1,8 +1,9 @@
 import { and, asc, eq, gte, lt, max, notExists, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { careTask, feedEvent, feedText, home, photo, plant } from "@/db/schema";
+import { careTask, feedEvent, feedText, home, photo, plant, user } from "@/db/schema";
 import { isGrowing, seasonOf, type Season } from "@/lib/care/season";
 import { addMonths, todayIn } from "@/lib/time";
+import { createTip } from "@/lib/tips/create";
 import { birthdayKind, joinedOn } from "./birthdays";
 import { createEvent } from "./events";
 import { currentMoods } from "./queries";
@@ -89,6 +90,16 @@ export async function runSeasonChanges(today: string): Promise<number> {
 
   const plants = await alivePlants();
   for (const p of plants) await createEvent(p.id, "season", { season, growing: isGrowing(season) });
+  // The gardener's season tip goes to everyone, once per season turn.
+  const everyone = await db.select({ id: user.id }).from(user);
+  await createTip({
+    kind: "season",
+    plantId: null,
+    category: null,
+    triggerKey: `season:${today.slice(0, 4)}-${season}`,
+    params: { growing: String(isGrowing(season)) },
+    recipients: everyone.map((u) => u.id),
+  });
   return plants.length;
 }
 
