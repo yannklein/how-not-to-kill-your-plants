@@ -7,6 +7,7 @@ import { seasonOf } from "@/lib/care/season";
 import { signedUrl } from "@/lib/storage";
 import { coverUrls } from "@/lib/tasks/queries";
 import { todayIn } from "@/lib/time";
+import { tipsForUser, type TipItem } from "@/lib/tips/queries";
 import { pickHighlights } from "./highlights";
 import { moodOf } from "./mood";
 import { renderPostText } from "./text";
@@ -14,14 +15,28 @@ import type { MomentType, Mood, PostPayload, PostType } from "./types";
 
 export type FeedPost = {
   id: string;
-  type: PostType;
+  /** A plant's own post, or a gardener tip. */
+  kind: "plant" | "tip";
+  type: PostType | "tip";
   createdAt: Date;
   text: string;
-  /** The plant's mood when the event happened. */
+  /** The plant's mood when the event happened (plant posts). */
   mood: Mood;
-  plant: { id: string; name: string; coverUrl: string | null };
+  /** Null for home-wide tips. */
+  plant: { id: string; name: string; coverUrl: string | null } | null;
   photoUrl: string | null;
 };
+
+const tipPost = (t: TipItem): FeedPost => ({
+  id: t.id,
+  kind: "tip",
+  type: "tip",
+  createdAt: t.shownAt,
+  text: t.text,
+  mood: "happy",
+  plant: t.plant ? { ...t.plant, coverUrl: null } : null,
+  photoUrl: null,
+});
 
 const HIGHLIGHT_WINDOW_DAYS = 30;
 const PAGE_SIZE = 20;
@@ -55,16 +70,32 @@ export async function feedForUser(
     .orderBy(desc(feedEvent.createdAt), desc(feedEvent.id))
     .limit(opts.mode === "highlights" ? 200 : (opts.limit ?? PAGE_SIZE));
 
-  let chosen = rows.map((r) => ({ ...r, type: r.event.type as PostType, createdAt: r.event.createdAt }));
+  const tips = await tipsForUser(
+    userId,
+    locale,
+    opts.mode === "highlights"
+      ? { since: new Date(Date.now() - HIGHLIGHT_WINDOW_DAYS * 24 * 3600_000) }
+      : { before: opts.before, limit: opts.limit ?? PAGE_SIZE },
+  );
+  const plantItems = rows.map((r) => ({ row: r, type: r.event.type as PostType | "tip", createdAt: r.event.createdAt }));
+  const tipItems = tips.map((t) => ({ tip: t, type: "tip" as const, createdAt: t.shownAt }));
+  const merged: ({ row?: (typeof rows)[number]; tip?: TipItem; type: PostType | "tip"; createdAt: Date })[] = [
+    ...plantItems,
+    ...tipItems,
+  ];
+
+  let chosen: typeof merged;
   if (opts.mode === "highlights") {
-    chosen = pickHighlights(chosen, new Date());
+    chosen = pickHighlights(merged, new Date());
     if (chosen.length === 0) {
       // Nothing in the window: the latest few, whatever their age.
-      const older = await feedForUser(userId, locale, { mode: "all", limit: 3 });
-      return older;
+      return feedForUser(userId, locale, { mode: "all", limit: 3 });
     }
+  } else {
+    chosen = merged.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, opts.limit ?? PAGE_SIZE);
   }
-  return toPosts(chosen, locale);
+  const plantPosts = new Map((await toPosts(chosen.flatMap((c) => (c.row ? [c.row] : [])), locale)).map((p) => [p.id, p]));
+  return chosen.map((c) => (c.tip ? tipPost(c.tip) : plantPosts.get(c.row!.event.id)!));
 }
 
 async function toPosts(
@@ -93,6 +124,7 @@ async function toPosts(
       const key = photoId ? keys.get(photoId) : undefined;
       return {
         id: r.event.id,
+        kind: "plant" as const,
         type: r.event.type as PostType,
         createdAt: r.event.createdAt,
         text: renderPostText({ type: r.event.type as PostType, payload, plantName: r.plant.name }, locale, r.text),

@@ -10,9 +10,10 @@ const PAGE_SIZE = 20;
 
 /** Every post the user may read, newest first, one page at a time. */
 export default async function NewsPage({ searchParams }: { searchParams: Promise<{ before?: string }> }) {
-  const [user, t, format, { before }] = await Promise.all([
+  const [user, t, tt, format, { before }] = await Promise.all([
     requireUser(),
     getTranslations("feed"),
+    getTranslations("tips"),
     getFormatter(),
     searchParams,
   ]);
@@ -33,6 +34,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
               post={post}
               when={format.relativeTime(post.createdAt, now)}
               moodLabel={t(`mood.${post.mood}`)}
+              gardenerLabel={tt("gardener")}
             />
           ))}
         </ul>

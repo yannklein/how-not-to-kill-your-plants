@@ -55,7 +55,8 @@
     "aiBanner": "Dépenses IA à {pct} % de {cap} $ ce mois-ci",
     "gardener": "🩺 Jardinier",
     "discover": "🔍 Découvrir",
-    "wishlist": "⭐ Envies"
+    "wishlist": "⭐ Envies",
+    "tips": "💡 Astuces"
   },
   "plants": {
     "title": "Plantes",

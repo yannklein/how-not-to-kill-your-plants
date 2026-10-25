@@ -55,7 +55,8 @@
     "aiBanner": "AI spend at {pct}% of ${cap} this month",
     "gardener": "🩺 Gardener",
     "discover": "🔍 Discover",
-    "wishlist": "⭐ Wishlist"
+    "wishlist": "⭐ Wishlist",
+    "tips": "💡 Tips"
   },
   "plants": {
     "title": "Plants",

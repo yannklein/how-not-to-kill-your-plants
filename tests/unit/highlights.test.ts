@@ -26,3 +26,10 @@ describe("pickHighlights", () => {
     expect(pickHighlights([], now)).toEqual([]);
   });
 });
+
+describe("pickHighlights with tips", () => {
+  it("ranks big plant moments first, then tips, then routine posts", () => {
+    const posts = [post("t", "thanks", 1), { id: "tip", type: "tip" as const, createdAt: ago(2) }, post("m", "moment", 3)];
+    expect(pickHighlights(posts, now).map((p) => p.id)).toEqual(["m", "tip", "t"]);
+  });
+});

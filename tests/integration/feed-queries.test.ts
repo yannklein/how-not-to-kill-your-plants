@@ -45,7 +45,7 @@ describe("feedForUser", () => {
     for (const p of [yaPlant, mPlant, allPlant, deadPlant]) await addEvent(p);
   });
 
-  const names = (posts: { plant: { name: string } }[]) => posts.map((p) => p.plant.name).sort();
+  const names = (posts: { plant: { name: string } | null }[]) => posts.flatMap((p) => (p.plant ? [p.plant.name] : [])).sort();
 
   it("shows each person only the news of plants in their groups, never dead plants", async () => {
     expect(names(await feedForUser(M, "en", { mode: "all" }))).toEqual(["Monstera", "Strelitzia"]);
@@ -62,9 +62,9 @@ describe("feedForUser", () => {
     const [ev] = await db.select().from(feedEvent).where(eq(feedEvent.plantId, mPlant));
     await db.insert(feedText).values({ eventId: ev.id, locale: "fr", text: "Bonjour, je suis Monstera 🌿" });
 
-    const fr = (await feedForUser(M, "fr", { mode: "all" })).find((p) => p.plant.name === "Monstera")!;
+    const fr = (await feedForUser(M, "fr", { mode: "all" })).find((p) => p.plant?.name === "Monstera")!;
     expect(fr.text).toBe("Bonjour, je suis Monstera 🌿");
-    const en = (await feedForUser(M, "en", { mode: "all" })).find((p) => p.plant.name === "Monstera")!;
+    const en = (await feedForUser(M, "en", { mode: "all" })).find((p) => p.plant?.name === "Monstera")!;
     expect(en.text).toContain("🌿");
     expect(en.text).not.toBe(fr.text);
     expect(en.mood).toBe("happy");

@@ -55,7 +55,8 @@
     "aiBanner": "Gasto com IA em {pct}% de US$ {cap} neste mês",
     "gardener": "🩺 Jardineiro",
     "discover": "🔍 Descobrir",
-    "wishlist": "⭐ Desejos"
+    "wishlist": "⭐ Desejos",
+    "tips": "💡 Dicas"
   },
   "plants": {
     "title": "Plantas",

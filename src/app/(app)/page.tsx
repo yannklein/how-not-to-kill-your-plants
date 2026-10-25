@@ -15,10 +15,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default async function HomePage() {
-  const [user, t, tf, format] = await Promise.all([
+  const [user, t, tf, tt, format] = await Promise.all([
     requireUser(),
     getTranslations("home"),
     getTranslations("feed"),
+    getTranslations("tips"),
     getFormatter(),
   ]);
   const [homeRow] = await db.select().from(home).limit(1);
@@ -86,6 +87,7 @@ export default async function HomePage() {
                 post={post}
                 when={format.relativeTime(post.createdAt, now)}
                 moodLabel={tf(`mood.${post.mood}`)}
+                gardenerLabel={tt("gardener")}
               />
             ))}
           </ul>
@@ -107,6 +109,9 @@ export default async function HomePage() {
         </Link>
         <Link href="/wishlist" className={cn(buttonVariants({ variant: "outline" }), "h-11 text-base")}>
           {t("wishlist")}
+        </Link>
+        <Link href="/tips" className={cn(buttonVariants({ variant: "outline" }), "col-span-2 h-11 text-base")}>
+          {t("tips")}
         </Link>
       </div>
 
