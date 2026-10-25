@@ -350,6 +350,15 @@
     "remove": "Retirer"
   },
   "tips": {
-    "title": "Astuces"
+    "title": "Astuces",
+    "home": "Votre maison",
+    "empty": "Pas encore d'astuces. Elles arrivent quand elles sont utiles.",
+    "gardener": "Jardinier",
+    "template": {
+      "season": "💡 {growing, select, true {🌱 Saison de croissance : c'est le moment de nourrir et de rempoter.} other {😴 Saison de repos : arrosez moins et arrêtez l'engrais.}}",
+      "repot": "💡 {plant} doit bientôt être rempotée : un mélange bio aéré et un pot d'une taille au-dessus.",
+      "species": "💡 Nouvelle venue : {species}. Sa fiche indique la lumière et l'arrosage.",
+      "pattern": "💡 La terre de {plant} est restée humide deux fois : vérifiez que le pot draine bien."
+    }
   }
 }

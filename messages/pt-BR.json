@@ -350,6 +350,15 @@
     "remove": "Remover"
   },
   "tips": {
-    "title": "Dicas"
+    "title": "Dicas",
+    "home": "Sua casa",
+    "empty": "Ainda sem dicas. Elas chegam quando são úteis.",
+    "gardener": "Jardineiro",
+    "template": {
+      "season": "💡 {growing, select, true {🌱 Época de crescer: hora de adubar e trocar de vaso.} other {😴 Época de descanso: regue menos e pare de adubar.}}",
+      "repot": "💡 {plant} vai precisar de um vaso novo em breve: use um substrato orgânico aerado e um vaso um tamanho maior.",
+      "species": "💡 Nova na família: {species}. Veja a página dela para luz e rega.",
+      "pattern": "💡 A terra de {plant} continuou úmida duas vezes: confira se o vaso drena bem."
+    }
   }
 }

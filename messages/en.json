@@ -350,6 +350,15 @@
     "remove": "Remove"
   },
   "tips": {
-    "title": "Tips"
+    "title": "Tips",
+    "home": "Your home",
+    "empty": "No tips yet. They come when they're useful.",
+    "gardener": "Gardener",
+    "template": {
+      "season": "💡 {growing, select, true {🌱 Growing season: time to feed and repot.} other {😴 Rest season: water less and stop fertilizing.}}",
+      "repot": "💡 {plant} needs a repot soon: use an airy organic mix and a pot one size up.",
+      "species": "💡 New in the family: {species}. Check its care page for light and watering.",
+      "pattern": "💡 {plant}'s soil stayed moist twice: make sure the pot drains well."
+    }
   }
 }
