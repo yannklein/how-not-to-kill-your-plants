@@ -97,7 +97,12 @@ export async function runSeasonChanges(today: string): Promise<number> {
     plantId: null,
     category: null,
     triggerKey: `season:${today.slice(0, 4)}-${season}`,
-    params: { growing: String(isGrowing(season)) },
+    params: {
+      growing: String(isGrowing(season)),
+      situation:
+        `The home (${h.hemisphere === "N" ? "northern" : "southern"} hemisphere, indoor plants) is entering ${season}, ` +
+        `the ${isGrowing(season) ? "growing" : "rest"} season. Give one seasonal care tip for the whole collection.`,
+    },
     recipients: everyone.map((u) => u.id),
   });
   return plants.length;

@@ -323,9 +323,9 @@
     "distanceMiddle": "À quelques pas",
     "distanceFar": "Loin",
     "effort": "Combien de soins ?",
-    "effortEasy": "Peu",
-    "effortMedium": "Un peu",
-    "effortDevoted": "Beaucoup",
+    "effortEasy": "Facile",
+    "effortMedium": "Moyen",
+    "effortDevoted": "Exigeant",
     "wants": "Que cherchez-vous ?",
     "wantLooks": "L'esthétique",
     "wantHome": "Bon pour la maison",
@@ -357,7 +357,7 @@
     "gardener": "Jardinier",
     "template": {
       "season": "💡 {growing, select, true {🌱 Saison de croissance : c'est le moment de nourrir et de rempoter.} other {😴 Saison de repos : arrosez moins et arrêtez l'engrais.}}",
-      "repot": "💡 {plant} doit bientôt être rempotée : un mélange bio aéré et un pot d'une taille au-dessus.",
+      "repot": "💡 {plant} doit bientôt être rempotée : utilisez un mélange bio aéré et un pot d'une taille au-dessus.",
       "species": "💡 Nouvelle venue : {species}. Sa fiche indique la lumière et l'arrosage.",
       "pattern": "💡 La terre de {plant} est restée humide deux fois : vérifiez que le pot draine bien."
     }

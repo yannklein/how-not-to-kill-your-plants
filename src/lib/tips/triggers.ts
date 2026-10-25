@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, lte, or } from "drizzle-orm";
 import { db } from "@/db/client";
 import { careTask, gardenerAlert, groupMember, home, plant, species, taskCompletion } from "@/db/schema";
+import { CareProfile } from "@/lib/ai/schemas";
 import type { AlertCategory } from "@/lib/gardener/types";
 import { addDays, todayIn } from "@/lib/time";
 
@@ -17,15 +18,18 @@ export type TipCandidate = {
 const NEW_SPECIES_DAYS = 7;
 const REPOT_AHEAD_DAYS = 7;
 const WARNING_BLOCK_DAYS = 7;
+const RECENT_DAYS = 7;
 
-/** "2026-W47": the ISO week of a day, so a pattern hint fires at most once a week. */
-export function isoWeek(day: string): string {
-  const d = new Date(`${day}T00:00:00Z`);
-  const weekday = (d.getUTCDay() + 6) % 7; // Monday = 0
-  d.setUTCDate(d.getUTCDate() - weekday + 3); // Thursday of this week decides the year
-  const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
-  const week = 1 + Math.round((d.getTime() - firstThursday.getTime()) / (7 * 24 * 3600_000));
-  return `${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+/** Species name and care basics, so the gardener's tip can be specific to the plant. */
+async function aboutPlant(p: { speciesId: string | null }) {
+  if (!p.speciesId) return { species: "unknown species", soil: null as string | null, light: null as string | null };
+  const [sp] = await db.select().from(species).where(eq(species.id, p.speciesId));
+  const profile = sp?.careProfile ? CareProfile.safeParse(sp.careProfile) : null;
+  return {
+    species: sp?.scientificName ?? "unknown species",
+    soil: profile?.success ? profile.data.text.en.soilMix : null,
+    light: profile?.success ? profile.data.light : null,
+  };
 }
 
 async function membersOf(groupId: string): Promise<string[]> {
@@ -34,7 +38,7 @@ async function membersOf(groupId: string): Promise<string[]> {
 }
 
 /** True when the gardener already warned about this plant and category (open, or in the last week). */
-async function warnedAbout(plantId: string, category: AlertCategory): Promise<boolean> {
+export async function warnedAbout(plantId: string, category: AlertCategory): Promise<boolean> {
   const since = new Date(Date.now() - WARNING_BLOCK_DAYS * 24 * 3600_000);
   const [row] = await db
     .select({ id: gardenerAlert.id })
@@ -71,12 +75,20 @@ export async function findTipCandidates(today: string): Promise<TipCandidate[]> 
       ),
     );
   for (const { task, plant: p } of repots) {
+    const about = await aboutPlant(p);
     out.push({
       kind: "repot",
       plantId: p.id,
       category: "repot",
       triggerKey: `repot:${task.id}:${task.dueOn}`,
-      params: { plant: p.name, dueOn: task.dueOn },
+      params: {
+        plant: p.name,
+        dueOn: task.dueOn,
+        situation:
+          `${p.name} (${about.species}) is due for a repot on ${task.dueOn}, within a week.` +
+          (about.soil ? ` Suggested soil: ${about.soil}.` : "") +
+          " Give one practical repot tip for this species: organic mix, pot one size up.",
+      },
       recipients: await membersOf(p.groupId),
     });
   }
@@ -96,7 +108,13 @@ export async function findTipCandidates(today: string): Promise<TipCandidate[]> 
       plantId: p.id,
       category: null,
       triggerKey: `species:${speciesId}`,
-      params: { plant: p.name, species: speciesName },
+      params: {
+        plant: p.name,
+        species: speciesName,
+        situation:
+          `A ${speciesName} called ${p.name} just joined the household (their first one).` +
+          " Give the single most useful basics tip for this species indoors (light and watering).",
+      },
       recipients: await membersOf(p.groupId),
     });
   }
@@ -105,19 +123,26 @@ export async function findTipCandidates(today: string): Promise<TipCandidate[]> 
   const alive = await db.select().from(plant).where(eq(plant.status, "alive"));
   if (alive.length) {
     const answers = await db
-      .select({ plantId: taskCompletion.plantId, outcome: taskCompletion.outcome, at: taskCompletion.completedAt })
+      .select({ id: taskCompletion.id, plantId: taskCompletion.plantId, outcome: taskCompletion.outcome, at: taskCompletion.completedAt })
       .from(taskCompletion)
       .where(and(eq(taskCompletion.type, "water"), inArray(taskCompletion.plantId, alive.map((p) => p.id))))
       .orderBy(desc(taskCompletion.completedAt));
     for (const p of alive) {
       const lastTwo = answers.filter((a) => a.plantId === p.id).slice(0, 2);
       if (lastTwo.length < 2 || lastTwo.some((a) => a.outcome !== "still_moist")) continue;
+      // Only fresh evidence: the latest answer within the last week.
+      if (todayIn(tz, lastTwo[0].at) < addDays(today, -RECENT_DAYS)) continue;
       out.push({
         kind: "pattern",
         plantId: p.id,
         category: "overwatering",
-        triggerKey: `moist:${p.id}:${isoWeek(today)}`,
-        params: { plant: p.name },
+        triggerKey: `moist:${p.id}:${lastTwo[0].id}`, // one hint per pair of answers, never weekly repeats
+        params: {
+          plant: p.name,
+          situation:
+            `The soil of ${p.name} (${(await aboutPlant(p)).species}) was still moist at the last two watering checks.` +
+            " Gently suggest checking that the pot drains well and watering a little less often.",
+        },
         recipients: await membersOf(p.groupId),
       });
     }

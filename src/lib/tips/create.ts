@@ -27,7 +27,7 @@ function callLive(c: TipCandidate): Promise<StructuredOutput> {
     model: MODEL,
     maxTokens: 4_000,
     system: TIP_SYSTEM_PROMPT,
-    content: `Situation: ${JSON.stringify({ kind: c.kind, ...c.params })}`,
+    content: `Situation: ${c.params.situation ?? c.kind}\nCategory: ${c.category ?? "general"}`,
     schema: TipTexts,
     fallback: false, // Haiku 5.5 has no server-side fallback
     timeoutMs: 30_000,

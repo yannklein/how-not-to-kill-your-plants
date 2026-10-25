@@ -73,4 +73,10 @@ describe("Discover (AI_MODE=mock)", () => {
     expect(await runDiscover(Y, { ...input(), effort: "devoted" }, { call: failing })).toEqual({ status: "error" });
     expect((await lastSearch(Y))?.input.effort).toBe("easy");
   });
+
+  it("answers with an error instead of crashing when the spot is gone or the input is bad", async () => {
+    await db.delete(spot);
+    expect(await runDiscover(Y, input())).toEqual({ status: "error" });
+    expect(await runDiscover(Y, { ...input(), spotId: "not-a-spot" })).toEqual({ status: "error" });
+  });
 });

@@ -99,4 +99,41 @@ describe("tip triggers and creation (AI_MODE=mock)", () => {
     expect(t.texts).toMatchObject({ en: expect.stringContaining("[mock en]"), "pt-BR": expect.any(String) });
     expect(renderTipText(t, "fr")).toContain("[mock fr]");
   });
+
+  it("tells the gardener what actually happened, with the species", async () => {
+    const [sp] = await db.insert(species).values({ scientificNameKey: "pilea peperomioides", scientificName: "Pilea peperomioides" }).returning();
+    const p = await addPlant({ speciesId: sp.id, name: "Pilo", createdAt: new Date("2026-09-01T10:00:00Z") });
+    const [task] = await db.insert(careTask).values({ plantId: p.id, type: "water", dueOn: "2026-11-25" }).returning();
+    for (let i = 0; i < 2; i++)
+      await db.insert(taskCompletion).values({
+        taskId: task.id, plantId: p.id, type: "water", userId: Y, outcome: "still_moist",
+        completedAt: new Date(Date.UTC(2026, 10, 17 + i)),
+      });
+    const [c] = await findTipCandidates(today);
+    expect(String(c.params.situation)).toMatch(/still moist at the last two/);
+    expect(String(c.params.situation)).toContain("Pilea peperomioides");
+
+    let seen: typeof c | undefined;
+    await createTip(c, {
+      call: async (input) => {
+        seen = input;
+        return { output: { en: "💡 a", fr: "💡 b", "pt-BR": "💡 c" }, refused: false, usage: { input_tokens: 1, output_tokens: 1 } };
+      },
+    });
+    expect(seen?.params.situation).toBe(c.params.situation);
+  });
+
+  it("hints once per pair of moist answers, and only while they're recent", async () => {
+    const p = await addPlant({ createdAt: new Date("2026-09-01T10:00:00Z") });
+    const [task] = await db.insert(careTask).values({ plantId: p.id, type: "water", dueOn: "2026-11-25" }).returning();
+    for (let i = 0; i < 2; i++)
+      await db.insert(taskCompletion).values({
+        taskId: task.id, plantId: p.id, type: "water", userId: Y, outcome: "still_moist",
+        completedAt: new Date(Date.UTC(2026, 10, 15 + i)), // Sun 15 and Mon 16 Nov
+      });
+    const thisWeek = (await findTipCandidates("2026-11-20"))[0];
+    const nextWeek = (await findTipCandidates("2026-11-23"))[0];
+    expect(nextWeek.triggerKey).toBe(thisWeek.triggerKey);
+    expect(await findTipCandidates("2026-11-25")).toEqual([]);
+  });
 });

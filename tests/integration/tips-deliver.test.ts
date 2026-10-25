@@ -1,6 +1,6 @@
 import { and, eq, isNotNull } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { home, tip, tipRecipient, user } from "@/db/schema";
+import { careTask, gardenerAlert, group, groupMember, home, plant, tip, tipRecipient, user } from "@/db/schema";
 import { runSeasonChanges } from "@/lib/feed/cron";
 import { deliverTips } from "@/lib/tips/deliver";
 import { db, resetDb } from "./setup";
@@ -69,5 +69,43 @@ describe("tip delivery", () => {
     expect(tips).toHaveLength(1);
     expect(tips[0]).toMatchObject({ kind: "season", triggerKey: "season:2026-autumn" });
     expect(await db.select().from(tipRecipient)).toHaveLength(2);
+  });
+
+  describe("re-checks a tip when it's about to be shown", () => {
+    let plantId: string;
+
+    beforeEach(async () => {
+      const [g] = await db.insert(group).values({ name: "YA" }).returning({ id: group.id });
+      await db.insert(groupMember).values({ groupId: g.id, userId: Y });
+      [{ id: plantId }] = await db.insert(plant).values({ groupId: g.id, name: "Pilea", acquiredOn: "2026-10-01" }).returning({ id: plant.id });
+    });
+
+    async function queueAbout(kind: "repot" | "pattern", triggerKey: string, category: "repot" | "overwatering") {
+      const [t] = await db.insert(tip).values({ kind, plantId, category, triggerKey, params: { plant: "Pilea" }, triggeredAt: now }).returning();
+      await db.insert(tipRecipient).values({ tipId: t.id, userId: Y });
+    }
+
+    it("skips a tip about a plant that died, keeping the week's slot for a valid one", async () => {
+      // A repot tip outranks a species tip, so only the plant's death can keep it out.
+      const [task] = await db.insert(careTask).values({ plantId, type: "repot", dueOn: "2026-11-23" }).returning();
+      await queueAbout("repot", `repot:${task.id}:2026-11-23`, "repot");
+      await db.update(plant).set({ status: "dead" }).where(eq(plant.id, plantId));
+      await queue("species", new Date(now.getTime() - day));
+      expect(await deliverTips(now)).toBe(1);
+      expect((await shown()).map((r) => r.kind)).toEqual(["species"]);
+    });
+
+    it("never shows a tip next to a gardener warning about the same thing", async () => {
+      await queueAbout("pattern", "moist:y", "overwatering");
+      await db.insert(gardenerAlert).values({ plantId, source: "pattern", category: "overwatering", texts: { en: "a", fr: "b", "pt-BR": "c" } });
+      expect(await deliverTips(now)).toBe(0);
+    });
+
+    it("drops a repot tip once that repot is done or moved", async () => {
+      const [task] = await db.insert(careTask).values({ plantId, type: "repot", dueOn: "2026-11-23" }).returning();
+      await queueAbout("repot", `repot:${task.id}:2026-11-23`, "repot");
+      await db.update(careTask).set({ dueOn: "2028-03-15" }).where(eq(careTask.id, task.id));
+      expect(await deliverTips(now)).toBe(0);
+    });
   });
 });

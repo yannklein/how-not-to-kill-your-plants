@@ -127,12 +127,14 @@ export async function runDiscover(
   raw: DiscoverInput,
   deps: DiscoverDeps = {},
 ): Promise<{ status: "ok"; cards: DiscoverCard[] } | { status: "paused" } | { status: "error" }> {
-  const input = Input.parse(raw);
+  const valid = Input.safeParse(raw);
+  if (!valid.success) return { status: "error" };
+  const input = valid.data;
   if (await discoverPaused()) return { status: "paused" };
 
   const [locale, household] = await Promise.all([localeOf(userId), householdContext(userId)]);
   const chosen = input.spotId ? household.spots.find((s) => s.id === input.spotId) : undefined;
-  if (input.spotId && !chosen) throw new Error("Unknown spot");
+  if (input.spotId && !chosen) return { status: "error" }; // e.g. the spot was deleted while the page was open
   const req: DiscoverRequest = {
     locale,
     spot: chosen
@@ -163,13 +165,16 @@ export async function runDiscover(
     return { status: "error" };
   }
 
-  await db
-    .insert(discoverSearch)
-    .values({ userId, input: input as Record<string, unknown>, results: cards as Record<string, unknown>[], locale })
-    .onConflictDoUpdate({
-      target: discoverSearch.userId,
-      set: { input: input as Record<string, unknown>, results: cards as Record<string, unknown>[], locale, createdAt: new Date() },
-    });
+  try {
+    const stored = { input: input as Record<string, unknown>, results: cards as Record<string, unknown>[], locale };
+    await db
+      .insert(discoverSearch)
+      .values({ userId, ...stored })
+      .onConflictDoUpdate({ target: discoverSearch.userId, set: { ...stored, createdAt: new Date() } });
+  } catch (error) {
+    console.error("discover: could not store the search", error);
+    return { status: "error" };
+  }
   return { status: "ok", cards };
 }
 
