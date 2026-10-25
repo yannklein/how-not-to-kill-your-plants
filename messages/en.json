@@ -53,7 +53,9 @@
     "addPlant": "Add plant",
     "myPlants": "My plants",
     "aiBanner": "AI spend at {pct}% of ${cap} this month",
-    "gardener": "🩺 Gardener"
+    "gardener": "🩺 Gardener",
+    "discover": "🔍 Discover",
+    "wishlist": "⭐ Wishlist"
   },
   "plants": {
     "title": "Plants",
@@ -311,7 +313,41 @@
     "empty": "Ask anything about your plants: yellow leaves, where to put them, when to water…"
   },
   "discover": {
-    "title": "Discover"
+    "title": "Discover",
+    "spot": "Where will it live?",
+    "newSpot": "Somewhere new",
+    "windowFaces": "The window faces",
+    "distance": "Distance from the window",
+    "distanceClose": "Right by it",
+    "distanceMiddle": "A few steps away",
+    "distanceFar": "Far from it",
+    "effort": "How much care?",
+    "effortEasy": "Easy",
+    "effortMedium": "Some",
+    "effortDevoted": "Devoted",
+    "wants": "What are you after?",
+    "wantLooks": "Looks",
+    "wantHome": "Good for the home",
+    "wantEdible": "Edible",
+    "style": "Style words (optional)",
+    "stylePlaceholder": "e.g. big leaves, trailing",
+    "search": "Search",
+    "searching": "Looking for plants…",
+    "paused": "Discover is back next month.",
+    "error": "Couldn't get suggestions. Try again.",
+    "results": "Suggestions",
+    "why": "Why it fits",
+    "ease": "Care",
+    "goesWith": "With your plants",
+    "benefits": "Benefits",
+    "safety": "Pets & kids",
+    "harvest": "Harvest",
+    "save": "Save to wishlist",
+    "saved": "Saved ✓",
+    "wishlist": "Wishlist",
+    "wishlistEmpty": "Nothing saved yet. Find plants in Discover.",
+    "bought": "I bought it",
+    "remove": "Remove"
   },
   "tips": {
     "title": "Tips"

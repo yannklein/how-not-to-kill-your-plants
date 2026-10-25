@@ -102,6 +102,12 @@ export default async function HomePage() {
         <Link href="/gardener" className={cn(buttonVariants({ variant: "outline" }), "col-span-2 h-11 text-base")}>
           {t("gardener")}
         </Link>
+        <Link href="/discover" className={cn(buttonVariants({ variant: "outline" }), "h-11 text-base")}>
+          {t("discover")}
+        </Link>
+        <Link href="/wishlist" className={cn(buttonVariants({ variant: "outline" }), "h-11 text-base")}>
+          {t("wishlist")}
+        </Link>
       </div>
 
       {spend?.warn ? (

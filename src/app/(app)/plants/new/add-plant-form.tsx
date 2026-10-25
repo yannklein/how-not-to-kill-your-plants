@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { IdentifyOutcome } from "@/lib/ai/identify";
 import { NOT_A_PLANT } from "@/lib/ai/schemas";
+import { normalizeScientificName } from "@/lib/ai/schemas";
 import { downscaleImage } from "@/lib/image/downscale";
 import { cn } from "@/lib/utils";
 import { uploadDraftPhoto } from "../upload-action";
@@ -34,7 +35,16 @@ function defaultGroupId(groups: Option[]): string {
 const fieldClass =
   "h-11 w-full rounded-lg border border-input bg-background px-3 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
-export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Option[] }) {
+export function AddPlantForm({
+  groups,
+  spots,
+  prefill = null,
+}: {
+  groups: Option[];
+  spots: Option[];
+  /** From "I bought it" on a wishlist item: the species to preselect, and the item to remove once saved. */
+  prefill?: { scientificName: string; wishId: string } | null;
+}) {
   const t = useTranslations("addPlant");
   const router = useRouter();
 
@@ -110,7 +120,17 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
     const usable = identified.isPlant && identified.candidates.length > 0;
     resultRef.current = identified;
     setResult(identified);
-    setSelected(usable ? 0 : "other");
+    if (prefill) {
+      // The user already knows what they bought: prefer that over the AI's guess.
+      const wanted = normalizeScientificName(prefill.scientificName);
+      const match = usable
+        ? identified.candidates.findIndex((c) => normalizeScientificName(c.scientificName) === wanted)
+        : -1;
+      setSelected(match >= 0 ? match : "other");
+      if (match < 0) setOtherSpecies(prefill.scientificName);
+    } else {
+      setSelected(usable ? 0 : "other");
+    }
     setName(identified.suggestedNames[0] ?? "");
     setPotSize(identified.potSizeCm ? String(Math.round(identified.potSizeCm)) : "");
     setGroupId((current) => current || defaultGroupId(groups));
@@ -130,6 +150,10 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
     setError(null);
     try {
       const pot = Number.parseInt(potSize, 10);
+      const boughtWish =
+        prefill && normalizeScientificName(species.scientificName) === normalizeScientificName(prefill.scientificName)
+          ? prefill.wishId
+          : undefined;
       const { plantId } = await createPlantAction({
         photoKeys: photos.map((p) => p.key),
         labelPhotoKey: photos.find((p) => p.slot === "label")?.key ?? null,
@@ -141,7 +165,7 @@ export function AddPlantForm({ groups, spots }: { groups: Option[]; spots: Optio
         spotId: spotId || null,
         justBought,
         potSizeCm: Number.isFinite(pot) && pot > 0 ? pot : null,
-      });
+      }, boughtWish);
       try {
         localStorage.setItem(LAST_GROUP_KEY, groupId);
       } catch {

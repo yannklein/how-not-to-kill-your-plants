@@ -3,11 +3,13 @@ import { getTranslations } from "next-intl/server";
 import { db } from "@/db/client";
 import { group, spot } from "@/db/schema";
 import { visibleGroupIds } from "@/lib/access";
+import { wishForUser } from "@/lib/discover/wishlist";
 import { requireUser } from "@/lib/session";
 import { AddPlantForm } from "./add-plant-form";
 
-export default async function NewPlantPage() {
-  const [user, t] = await Promise.all([requireUser(), getTranslations("addPlant")]);
+export default async function NewPlantPage({ searchParams }: { searchParams: Promise<{ wish?: string }> }) {
+  const [user, t, { wish }] = await Promise.all([requireUser(), getTranslations("addPlant"), searchParams]);
+  const fromWish = wish ? await wishForUser(user.id, wish) : null;
   const groupIds = await visibleGroupIds(user.id);
   const [groups, spots] = await Promise.all([
     groupIds.length
@@ -22,7 +24,11 @@ export default async function NewPlantPage() {
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <h1 className="text-xl font-semibold">{t("title")}</h1>
-      <AddPlantForm groups={groups} spots={spots} />
+      <AddPlantForm
+        groups={groups}
+        spots={spots}
+        prefill={fromWish ? { scientificName: fromWish.scientificName, wishId: fromWish.id } : null}
+      />
     </main>
   );
 }

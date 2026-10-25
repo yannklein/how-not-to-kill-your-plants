@@ -53,7 +53,9 @@
     "addPlant": "Adicionar planta",
     "myPlants": "Minhas plantas",
     "aiBanner": "Gasto com IA em {pct}% de US$ {cap} neste mês",
-    "gardener": "🩺 Jardineiro"
+    "gardener": "🩺 Jardineiro",
+    "discover": "🔍 Descobrir",
+    "wishlist": "⭐ Desejos"
   },
   "plants": {
     "title": "Plantas",
@@ -311,7 +313,41 @@
     "empty": "Pergunte o que quiser sobre suas plantas: folhas amarelas, onde colocar, quando regar…"
   },
   "discover": {
-    "title": "Descobrir"
+    "title": "Descobrir",
+    "spot": "Onde ela vai ficar?",
+    "newSpot": "Um lugar novo",
+    "windowFaces": "A janela fica voltada para",
+    "distance": "Distância da janela",
+    "distanceClose": "Bem ao lado",
+    "distanceMiddle": "A alguns passos",
+    "distanceFar": "Longe",
+    "effort": "Quanto cuidado?",
+    "effortEasy": "Pouco",
+    "effortMedium": "Algum",
+    "effortDevoted": "Bastante",
+    "wants": "O que você procura?",
+    "wantLooks": "Visual",
+    "wantHome": "Bom para a casa",
+    "wantEdible": "Comestível",
+    "style": "Estilo (opcional)",
+    "stylePlaceholder": "ex.: folhas grandes, pendente",
+    "search": "Buscar",
+    "searching": "Procurando plantas…",
+    "paused": "Descobrir volta no mês que vem.",
+    "error": "Não deu para buscar sugestões. Tente de novo.",
+    "results": "Sugestões",
+    "why": "Por que combina",
+    "ease": "Cuidados",
+    "goesWith": "Com suas plantas",
+    "benefits": "Benefícios",
+    "safety": "Pets e crianças",
+    "harvest": "Colheita",
+    "save": "Salvar na lista de desejos",
+    "saved": "Salva ✓",
+    "wishlist": "Lista de desejos",
+    "wishlistEmpty": "Nada salvo ainda. Encontre plantas em Descobrir.",
+    "bought": "Comprei",
+    "remove": "Remover"
   },
   "tips": {
     "title": "Dicas"

@@ -53,7 +53,9 @@
     "addPlant": "Ajouter une plante",
     "myPlants": "Mes plantes",
     "aiBanner": "Dépenses IA à {pct} % de {cap} $ ce mois-ci",
-    "gardener": "🩺 Jardinier"
+    "gardener": "🩺 Jardinier",
+    "discover": "🔍 Découvrir",
+    "wishlist": "⭐ Envies"
   },
   "plants": {
     "title": "Plantes",
@@ -311,7 +313,41 @@
     "empty": "Posez n'importe quelle question : feuilles jaunes, où les placer, quand arroser…"
   },
   "discover": {
-    "title": "Découvrir"
+    "title": "Découvrir",
+    "spot": "Où vivra-t-elle ?",
+    "newSpot": "Un nouvel endroit",
+    "windowFaces": "La fenêtre est orientée",
+    "distance": "Distance de la fenêtre",
+    "distanceClose": "Juste à côté",
+    "distanceMiddle": "À quelques pas",
+    "distanceFar": "Loin",
+    "effort": "Combien de soins ?",
+    "effortEasy": "Peu",
+    "effortMedium": "Un peu",
+    "effortDevoted": "Beaucoup",
+    "wants": "Que cherchez-vous ?",
+    "wantLooks": "L'esthétique",
+    "wantHome": "Bon pour la maison",
+    "wantEdible": "Comestible",
+    "style": "Style (facultatif)",
+    "stylePlaceholder": "ex. grandes feuilles, retombante",
+    "search": "Chercher",
+    "searching": "Recherche de plantes…",
+    "paused": "Découvrir revient le mois prochain.",
+    "error": "Impossible d'obtenir des suggestions. Réessayez.",
+    "results": "Suggestions",
+    "why": "Pourquoi elle convient",
+    "ease": "Entretien",
+    "goesWith": "Avec vos plantes",
+    "benefits": "Bienfaits",
+    "safety": "Animaux et enfants",
+    "harvest": "Récolte",
+    "save": "Ajouter à la liste d'envies",
+    "saved": "Ajoutée ✓",
+    "wishlist": "Liste d'envies",
+    "wishlistEmpty": "Rien pour l'instant. Trouvez des plantes dans Découvrir.",
+    "bought": "Je l'ai achetée",
+    "remove": "Retirer"
   },
   "tips": {
     "title": "Astuces"
